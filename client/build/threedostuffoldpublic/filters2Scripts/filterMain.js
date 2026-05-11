@@ -47,14 +47,22 @@ function applyFilter() {
     };
 
     document.getElementById('videoOfUser') && (document.getElementById('videoOfUser').style.transform = 'rotateY(180deg)');
-    alert(filter)
+
     if (filter === 'inverted') {
-        document.getElementById('videoOfUser') && (document.getElementById('videoOfUser').style.transform = 'rotateY(0)');
+        document.getElementById('videoOfUser') && (document.getElementById('videoOfUser').style.transform = 'rotateY(0deg)');
         return;
     }
     if (filter === 'none') { light = new THREE.PointLight(0xffffff, 1); light.position.z = 10; return; }
-    if (filter === 'laCasaMask') { if (casaMask) { light = new THREE.PointLight(0xffffff, 1); light.position.z = 6; mainChanger.add(casaMask); finalize(); } return; }
-    if (filter === 'AnoymnMask') { if (ANONYMOUSMESH) { light = new THREE.PointLight(0xffffff, 1); light.position.z = 6; mainChanger.add(ANONYMOUSMESH); finalize(); } return; }
+    if (filter === 'laCasaMask') {
+        light = new THREE.PointLight(0xffffff, 1); light.position.z = 6;
+        if (!casaMask) { loadCasaMask(() => applyFilter()); return; }
+        mainChanger.add(casaMask); finalize(); return;
+    }
+    if (filter === 'AnoymnMask') {
+        light = new THREE.PointLight(0xffffff, 1); light.position.z = 6;
+        if (!ANONYMOUSMESH) { loadAnonymousMesh(() => applyFilter()); return; }
+        mainChanger.add(ANONYMOUSMESH); finalize(); return;
+    }
 
     if (filter === 'covidMask') {
         light = new THREE.PointLight(0xffffff, 1); light.position.z = 6;
@@ -117,7 +125,12 @@ function applyFilter() {
     finalize();
 }
 
-function loadPreloadedModels() {
+let casaMaskLoading = false;
+let anonymousLoading = false;
+
+function loadCasaMask(onReady) {
+    if (casaMaskLoading) return;
+    casaMaskLoading = true;
     const casaLoader = new THREE.BufferGeometryLoader();
     casaLoader.load('/threedostuffoldpublic/models/casa_de_papel/casa_de_papel.json', geom => {
         const mat = new THREE.MeshPhongMaterial({
@@ -129,8 +142,13 @@ function loadPreloadedModels() {
         casaMask.scale.multiplyScalar(0.06);
         casaMask.position.y = -0.8;
         casaMask.scale.x = 0.07;
+        if (onReady) onReady();
     });
+}
 
+function loadAnonymousMesh(onReady) {
+    if (anonymousLoading) return;
+    anonymousLoading = true;
     const headLoader = new THREE.BufferGeometryLoader();
     headLoader.load('/threedostuffoldpublic/models/anonymous/anonymous.json', geom => {
         const mat = new THREE.MeshLambertMaterial({
@@ -141,6 +159,7 @@ function loadPreloadedModels() {
         ANONYMOUSMESH.frustumCulled = false;
         ANONYMOUSMESH.scale.multiplyScalar(0.065);
         ANONYMOUSMESH.position.set(0, -0.65, 0.35);
+        if (onReady) onReady();
     });
 }
 
@@ -172,8 +191,6 @@ async function main() {
                 JeelizThreeHelper.render(detectState, THREECAMERA);
             }
         });
-
-        loadPreloadedModels();
     } catch (e) {
         console.warn('JeelizFaceFilter failed to initialize:', e);
     }
