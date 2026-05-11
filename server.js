@@ -5,7 +5,17 @@ const app = express();
 const server = http.createServer(app);
 //const socket = require('socket.io', { rememberTransport: false, transports: ['WebSocket', 'Flash Socket', 'AJAX long-polling'] })
 const socket = require("socket.io");
-const io = socket(server);
+const io = socket(server, {
+  cors: {
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:8000",
+      "https://chatnplay.baraaelbaba.com/"
+    ],
+    methods: ["GET", "POST"],
+    credentials: true
+  }
+});
 const path = require("path");
 const _ = require("lodash");
 
@@ -55,17 +65,13 @@ io.on("connection", (socket) => {
 
     if (userInQueue) {
       _.remove(queue, { id: userInQueue.id });
-      isBusy = false;
     }
+    isBusy = false;
   });
 
   socket.on("leaveQueue", () => {
-    const userInQueue = _.find(queue, u => u.id === socket.id);
-
-    if (userInQueue && isBusy) {
-      isBusy = false;
-      _.remove(queue, { id: userInQueue.id });
-    }
+    _.remove(queue, { id: socket.id });
+    isBusy = false;
   });
 
   socket.on("sendMessage", (data) => {
@@ -90,6 +96,8 @@ io.on("connection", (socket) => {
   });
 
   socket.on("endCall", (data) => {
+    isBusy = false;
+    _.remove(queue, { id: socket.id });
     io.to(data.peerId).emit("isCallEnded", {
       message: data.message,
     });
@@ -112,6 +120,16 @@ io.on("connection", (socket) => {
   }
   );
   socket.on("findPartner", (data) => {
+    // If this socket already has a stale queue entry (e.g. user changed game
+    // while waiting), drop it so we can re-evaluate with the new params.
+    // This also recovers from a stuck `isBusy=true` state where the user
+    // would otherwise need to manually press stop+start to reconnect.
+    const existingIdx = _.findIndex(queue, u => u.id === socket.id);
+    if (existingIdx !== -1) {
+      queue.splice(existingIdx, 1);
+    }
+    isBusy = false;
+
     let uAchievedThierAuthPrefrence
     let dataAchievedThierAuthPrefrence
     viablePartner = _.find(queue, u => {

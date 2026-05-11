@@ -3,6 +3,9 @@ export default function DarkMode() {
   return (
     <div> 
         <style jsx>{`
+        .chatFiltersCont .filtersRow{
+            background:#333
+        }
         .game-info {
           margin-left: 20px;
           text-align: center;
@@ -10,6 +13,12 @@ export default function DarkMode() {
           font-weight: bold;
           color: #E4EDDC;
         }
+        .chatInput{
+        color:#333 !important
+        } 
+        .dashboardLabel{
+            color:white
+          }
         .fixedGameCont{
           background-color: #27415D; 
         }

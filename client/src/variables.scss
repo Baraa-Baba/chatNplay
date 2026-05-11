@@ -1,26 +1,79 @@
-$darkPrimaryGreen: hsl(110, 65%, 35%);
+/* ─────────────────────────────────────────────────────────────────
+   Design tokens - Modern Minimalist
+   ─────────────────────────────────────────────────────────────── */
 
-$background-color: #111616;
-$font-color: #FFF8E8;
-$primary-color: #068D9D;
-$primary-color-background: #06A0B1;
-$primary-color-hover: #07B2C5;
-$primary-color-active: #07B2C5;
-$blue-sub: hsl(240, 100%, 25%);
+/* Brand */
+$primary:           #2563EB;
+$primary-hover:     #1D4ED8;
+$primary-active:    #1E40AF;
+$primary-soft:      #EFF6FF;
+$primary-soft-2:    #DBEAFE;
 
-$secondary-color: #4F5492;
-$secondary-color-background: #565B9F;
-$secondary-color-hover: #6065A9;
-$secondary-color-active: rgba(13, 163, 182, 0.16);
+/* Success / accent */
+$success:           #16A34A;
+$success-hover:     #15803D;
+$success-soft:      #DCFCE7;
 
-$warning-color: #f44336;
-$warning-color-background: #ff99cc;
-$warning-color-hover: #ffcdd2;
-$warning-color-active: #ef9a9a;
+/* Danger */
+$danger:            #DC2626;
+$danger-hover:      #B91C1C;
+$danger-soft:       #FEE2E2;
 
-$button-hover-color: rgba(13, 163, 182, 0.16);
+/* Neutral / surface */
+$bg:                #FAFAFA;
+$surface:           #FFFFFF;
+$surface-2:         #F9FAFB;
+$surface-3:         #F3F4F6;
 
-$drop-shadow: 0 1px 6px rgba($primary-color, 0.1), 0 4px 24px rgba($primary-color, 0.06);
-$lift-shadow: 0 1px 4px rgba($primary-color, 0.1), 0 4px 12px rgba($primary-color, 0.06);
+/* Dark surface (nav-on-dark, controls) */
+$dark:              #111827;
+$dark-2:            #1F2937;
+$dark-3:            #374151;
 
-$fresh-green: #27C500
+/* Text */
+$text:              #111827;
+$text-muted:        #6B7280;
+$text-faint:        #9CA3AF;
+$text-on-dark:      #F9FAFB;
+
+/* Borders */
+$border:            #E5E7EB;
+$border-strong:     #D1D5DB;
+$border-soft:       #F3F4F6;
+
+/* Subtle shadows - minimal approach */
+$shadow-sm:         0 1px 2px rgba(0, 0, 0, 0.02);
+$shadow:            0 1px 2px rgba(0, 0, 0, 0.03);
+$shadow-md:         0 2px 4px rgba(0, 0, 0, 0.04);
+$shadow-lg:         0 4px 8px rgba(0, 0, 0, 0.05);
+$shadow-dark:       0 4px 12px rgba(0, 0, 0, 0.08);
+
+/* Radii - modern and clean */
+$r-sm:              6px;
+$r:                 8px;
+$r-md:              10px;
+$r-lg:              12px;
+$r-xl:              16px;
+$r-pill:            999px;
+
+/* Backwards-compat aliases (older code still references these) */
+$darkPrimaryGreen:        $success;
+$background-color:        $dark;
+$font-color:              $text-on-dark;
+$primary-color:           $primary;
+$primary-color-background: $primary;
+$primary-color-hover:     $primary-hover;
+$primary-color-active:    $primary-active;
+$blue-sub:                $primary;
+$secondary-color:         $dark-2;
+$secondary-color-background: $dark-3;
+$secondary-color-hover:   $text-muted;
+$secondary-color-active:  rgba(37, 99, 235, 0.08);
+$warning-color:           $danger;
+$warning-color-background: $danger-soft;
+$warning-color-hover:     $danger-hover;
+$warning-color-active:    $danger-hover;
+$button-hover-color:      rgba(37, 99, 235, 0.05);
+$drop-shadow:             $shadow;
+$lift-shadow:             $shadow-md;
+$fresh-green:             $success;

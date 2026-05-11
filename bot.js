@@ -2,7 +2,7 @@ const axios = require('axios');
 
 // Function to make the server call
 function callServer() {
-    axios.get('https://chatandplay.onrender.com/')
+    axios.get('https://chatnplay.baraaelbaba.com/')
         .then(response => {
             console.log('Server response:', response.data);
         })

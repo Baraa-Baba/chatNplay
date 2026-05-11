@@ -2,39 +2,23 @@ import React, { useEffect, useState, useRef } from "react";
 import io from "socket.io-client";
 import { v4 as uuidv4 } from 'uuid';
 import Peer from "simple-peer";
-import AliceCarousel from 'react-alice-carousel';
 import { countryList } from './countryList'
 import { countries, zones } from 'moment-timezone/data/meta/latest.json'
-import 'react-alice-carousel/lib/alice-carousel.css';
 import { Link } from "react-router-dom";
 import ChooseGame from "./Components/ChooseGame/ChooseGame";
 import MyChessBoard from './Components/Games/MyChessBoard'
-import {
-  FaUserFriends,
-  FaPhotoVideo,
-  FaMicrophone,
-  FaMicrophoneSlash,
-  FaVideo,
-  FaVideoSlash,
-  FaPhone,
-  FaExpandArrowsAlt,
-  FaCompressArrowsAlt,
-  FaLaptop,
-  FaCrosshairs,
-  FaMale,
-  FaFemale,
-  FaUser
-} from "react-icons/fa";
+import { FaUsers, FaUserPlus, FaUser, FaPaperPlane } from 'react-icons/fa';
 import Navigation from "./Components/Navigation/Navigation";
 import Chat from "./Components/Chat/Chat";
-import Spinner from "./Components/Spinner/Spinner";
 import Footer from "./Components/Footer/Footer";
 import DarkMode from "./Components/DarkMode/DarkMode";
+import ControlBar from "./Components/ControlBar/ControlBar";
+import FilterCarousel from "./Components/FilterCarousel/FilterCarousel";
+import LazyFilters2 from "./Components/LazyFilters/LazyFilters";
 import { useNavigate } from 'react-router-dom';
 import { setDoc, doc, getDoc } from "firebase/firestore";
 import { useUserAuth } from './context/Auth';
 import { db, auth } from "./firebase";
-import { useId } from "react";
 import TicTak from "./Components/Games/TicTak";
 function App() {
   const [yourID, setYourID] = useState("");
@@ -60,6 +44,7 @@ function App() {
   const [isShowDesktopChatBox, setisShowDesktopChatBox] = useState(true)
   const [currentVideoStream, setCurrentVideoStream] = useState()
   const [ShowFilterOptions, setShowFilterOptions] = useState(false)
+  const [filtersEngaged, setFiltersEngaged] = useState(false)
   const [onlyChat, setOnlyChat] = useState(true);
   const [partner, setPartner] = useState("");
   const [searchingPartner, setSearchingPartner] = useState(false);
@@ -242,35 +227,35 @@ function App() {
     }, 500)
   }, [])
   useEffect(() => {
-    var canreach = false;
+    const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+    if (!isFirefox) return;
 
-    document.addEventListener('DOMContentLoaded', function () {
-      //check in firefox if enhanced tracking protection is enabled 
+    const probe = () => {
       try {
-        var img = new Image();
-        img.src = "//apps.facebook.com/favicon.ico";
-        img.style.display = "none";
-        img.onload = function () {
-          canreach = true;
-        };
-        img.onerror = imageDidntLoad()
-        document.body.appendChild(img);
-      } catch {
-      }
-      function imageDidntLoad() {
-        var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
-        if (isFirefox) {
-          document.getElementById('firefoxDialog').showModal()
-          document.getElementById('firefoxDialog').style.visibility = 'visible'
-          document.getElementById('okfirefoxDialog').addEventListener('click', (event) => {
+        const img = new Image();
+        img.style.display = 'none';
+        img.onerror = () => {
+          const dlg = document.getElementById('firefoxDialog');
+          if (!dlg) return;
+          dlg.showModal();
+          dlg.style.visibility = 'visible';
+          const ok = document.getElementById('okfirefoxDialog');
+          if (ok) ok.addEventListener('click', (event) => {
             event.preventDefault();
-            document.getElementById('firefoxDialog').style.visibility = 'hidden'
-            document.getElementById('firefoxDialog').close();
-          })
-        }
-      }
-    });
+            dlg.style.visibility = 'hidden';
+            dlg.close();
+          });
+        };
+        img.src = '//apps.facebook.com/favicon.ico';
+      } catch {}
+    };
 
+    if (document.readyState === 'complete') {
+      setTimeout(probe, 0);
+    } else {
+      window.addEventListener('load', probe, { once: true });
+    }
+    return () => window.removeEventListener('load', probe);
   }, [])
   useEffect(() => {
     const handleResize = () => {
@@ -297,8 +282,12 @@ function App() {
   useEffect(() => {
 
     initVideo()
-    socket.current = io('https://chatandplay.onrender.com', {
+    const SOCKET_URL = window.location.hostname === 'localhost'
+      ? `http://localhost:8000`
+      : 'https://chatnplay.baraaelbaba.com/';
+    socket.current = io(SOCKET_URL, {
       withCredentials: true,
+      transports: ['websocket'],
       extraHeaders: {
         "my-custom-header": "abcd"
       }
@@ -337,11 +326,11 @@ function App() {
     socket.current.on("isInverted", (data) => {
       if (data.message == 'inverted') {
         if (document.getElementById('partnerVideo')) {
-          document.getElementById('partnerVideo').style.transform = `rotateY(${180}deg)`
+          document.getElementById('partnerVideo').style.transform = `rotateY(${0}deg)`
         }
       } else {
         if (document.getElementById('partnerVideo')) {
-          document.getElementById('partnerVideo').style.transform = `rotateY(${0}deg)`
+          document.getElementById('partnerVideo').style.transform = `rotateY(${180}deg)`
         }
       }
     });
@@ -709,11 +698,10 @@ function App() {
               ...newStream.getVideoTracks(),
             ]);
             var canvas = document.getElementById("jeeFaceFilterCanvas");
-            var mystream = canvas.captureStream(10);
-            let filterStreamm = new MediaStream([
-              getSilence(),
-              ...mystream.getVideoTracks(),
-            ]);
+            var mystream = canvas ? canvas.captureStream(10) : null;
+            let filterStreamm = mystream
+              ? new MediaStream([getSilence(), ...mystream.getVideoTracks()])
+              : new MediaStream([getSilence()]);
             setStream(silenceStream);
             if (userVideo.current) {
               userVideo.current.srcObject = silenceStream;
@@ -801,6 +789,37 @@ function App() {
       userAuthPrefernce: userAuthPrefernce,
 
     });
+  }
+
+  // If the user picks a different game while still searching, re-enter the
+  // queue with the new game so they can be matched accordingly. Skips on
+  // first render and when not currently searching.
+  const didMountUserGame = useRef(false);
+  useEffect(() => {
+    if (!didMountUserGame.current) {
+      didMountUserGame.current = true;
+      return;
+    }
+    if (searchingPartner && !isOnline && socket.current) {
+      const randomId = uuidv4();
+      setCurrentRoomId(randomId);
+      socket.current.emit("findPartner", {
+        from: yourID,
+        uid: user?.uid,
+        onlyChat: onlyChat,
+        userGame: userGame,
+        roomId: randomId,
+        AuthType: AuthType,
+        userAuthPrefernce: userAuthPrefernce,
+      });
+    }
+  }, [userGame]);
+
+  function gameLabel(g) {
+    if (g === 'chess') return 'Chess';
+    if (g === 'ticTak') return 'Tic-Tac-Toe';
+    if (g === 'superTicTak') return 'Super Tic-Tac-Toe';
+    return 'Chat only';
   }
   useEffect(() => {
     if (messages && messages[0]) {
@@ -1046,7 +1065,8 @@ function App() {
     }
   }
   function shareScreen() {
-    navigator.mediaDevices.getDisplayMedia({ cursor: true }).then(
+    if (!myPeer.current || !isOnline || !stream) return;
+    navigator.mediaDevices.getDisplayMedia({ video: true }).then(
       (screenStream) => {
         myPeer.current.replaceTrack(
           stream.getVideoTracks()[0],
@@ -1074,7 +1094,9 @@ function App() {
         };
       },
       (err) => {
-        console.log(err);
+        if (err.name !== 'NotAllowedError') {
+          console.error('Screen share error:', err);
+        }
       }
     );
   }
@@ -1120,6 +1142,7 @@ function App() {
     return check;
   }
   let UserVideo;
+  // eslint-disable-next-line
   useEffect(() => {
     if (isStarted && isMobile) {
       setisStarted1Mobile(true)
@@ -1128,68 +1151,79 @@ function App() {
     }
   }, [isStarted, isMobile])
   useEffect(() => {
-    document.getElementById('filterValue').value = filter
-    if (userVideo.current && stream) {
+    if (!filtersEngaged && (ShowFilterOptions || (filter !== 'none' && filter !== 'inverted'))) {
+      setFiltersEngaged(true);
+    }
+  }, [ShowFilterOptions, filter, filtersEngaged])
+  useEffect(() => {
+    const filterEl = document.getElementById('filterValue');
+    if (filterEl) filterEl.value = filter;
 
-      if (filter == 'none' || filter == 'inverted') {
+    const canvas = document.getElementById("jeeFaceFilterCanvas");
+    if (canvas) {
+      if (filter !== 'none' && filter !== 'inverted') {
+        // Keep canvas active for jeeliz processing but invisible,
+        // and render the filtered output through the normal video element.
+        canvas.style.display = 'block';
+        canvas.style.opacity = '0';
+        canvas.style.transform = '';
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+        canvas.style.top = '0';
+        canvas.style.bottom = '0';
+        canvas.style.left = '0';
+        canvas.style.pointerEvents = 'none';
+      } else {
+        canvas.style.display = 'none';
+        canvas.style.width = '';
+        canvas.style.height = '';
+        canvas.style.top = '';
+        canvas.style.left = '';
+        canvas.style.transform = '';
+        canvas.style.opacity = '';
+        canvas.style.pointerEvents = '';
+      }
+    }
+
+    // Notify the jeeliz filter library about the change
+    setTimeout(() => {
+      const chooseBtn = document.getElementById('chooseFilter');
+      if (chooseBtn) chooseBtn.click();
+    }, 30);
+
+    if (userVideo.current && stream) {
+      if (filter === 'none' || filter === 'inverted') {
+        userVideo.current.style.display = '';
         userVideo.current.srcObject = stream;
-        setCurrentVideoStream(stream)
-        setisVideoEnabled(true)
-        socket.current.emit("sendIsInverted", {
-          message: filter,
-          peerId: partner,
-        });
+        setCurrentVideoStream(stream);
+        setisVideoEnabled(true);
+        socket.current?.emit("sendIsInverted", { message: filter, peerId: partner });
         if (myPeer.current && isOnline) {
           try {
-            myPeer.current.replaceTrack(
-              stream.getVideoTracks()[0],
-              stream.getVideoTracks()[0],
-              stream
-            )
-          }
-          catch {
-            console.log('error in replacing tracks')
-          }
+            myPeer.current.replaceTrack(stream.getVideoTracks()[0], stream.getVideoTracks()[0], stream);
+          } catch { /* track replacement failed */ }
         }
-      }
-      else {
-        if (document.getElementById("jeeFaceFilterCanvas")) {
-          socket.current.emit("sendIsInverted", {
-            message: filter,
-            peerId: partner,
-          });
-          setisVideoEnabled(true)
-          var canvas = document.getElementById("jeeFaceFilterCanvas");
-          var mystream = canvas.captureStream(10);
-          let filterStreamm = new MediaStream([
-            ...stream.getAudioTracks(),
-            ...mystream.getVideoTracks(),
-          ]);
-          socket.current.emit("sendIsInverted", {
-            message: filter,
-            peerId: partner,
-          });
+      } else {
+        if (canvas) {
+          // Keep normal video element visible so filtered video has same sizing/styling.
+          userVideo.current.style.display = '';
+          socket.current?.emit("sendIsInverted", { message: filter, peerId: partner });
+          setisVideoEnabled(true);
+          const canvasStream = canvas.captureStream(15);
+          const filterStreamm = new MediaStream([...stream.getAudioTracks(), ...canvasStream.getVideoTracks()]);
           userVideo.current.srcObject = filterStreamm;
           if (myPeer.current && isOnline) {
             try {
-              myPeer.current.replaceTrack(
-                stream.getVideoTracks()[0],
-                filterStreamm.getVideoTracks()[0],
-                stream
-              )
-            }
-            catch (e) {
-              console.log('error in replacing tracks', e)
-
-              alert('error in sended filtered stream to partner ')
+              myPeer.current.replaceTrack(stream.getVideoTracks()[0], filterStreamm.getVideoTracks()[0], stream);
+            } catch (e) {
+              console.warn('Could not replace filter track:', e);
             }
           }
-          setCurrentVideoStream(filterStreamm)
-          setFilterStream(filterStreamm)
+          setCurrentVideoStream(filterStreamm);
+          setFilterStream(filterStreamm);
         } else {
           userVideo.current.srcObject = stream;
-          setCurrentVideoStream(stream)
-
+          setCurrentVideoStream(stream);
         }
       }
     }
@@ -1235,288 +1269,8 @@ function App() {
       />
     );
   }
-  let audioControl;
-  let videoControl;
-  let fullscreenButton;
-  let screenShare;
-  let hangUp;
-  if (audioMuted) {
-    audioControl = (
-      <span className={`iconContainer 
-       `} onClick={() => toggleMuteAudio()}>
-
-        <svg style={{ paddingTop: '3px', transform: 'scale(1.13)' }} className="iconAlternative"
-          alt="Unmute audio" xmlns="http://www.w3.org/2000/svg" width="51" height="44" viewBox="0 0 33 36" fill="none">
-          <g filter="url(#filter0_d_559_31)">
-            <path d="M16.5 23.8333C20.8279 23.8333 24.3333 20.85 24.3333 17.1666V7.99998C24.3333 4.31665 20.8279 1.33331 16.5 1.33331C12.172 1.33331 8.66663 4.31665 8.66663 7.99998V17.1666C8.66663 20.85 12.172 23.8333 16.5 23.8333Z" fill="#FF0000" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-            <path d="M1.5188 14.0833V16.9166C1.5188 23.95 8.23588 29.6666 16.5 29.6666C24.7642 29.6666 31.4813 23.95 31.4813 16.9166V14.0833M13.778 8.71664C15.5405 8.16664 17.4596 8.16664 19.2221 8.71664M14.9334 12.25C15.9713 12.0166 17.0484 12.0166 18.0863 12.25M16.5 29.6666V34.6666" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-          </g>
-          <line x1="3.242" y1="6.57148" x2="30.6324" y2="31.4665" stroke="black" stroke-width="1.3" />
-          <defs>
-            <filter id="filter0_d_559_31" x="0.768799" y="0.583344" width="39.4624" height="42.8333" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-              <feFlood flood-opacity="0" result="BackgroundImageFix" />
-              <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha" />
-              <feOffset dy="4" />
-              <feGaussianBlur stdDeviation="2" />
-              <feComposite in2="hardAlpha" operator="out" />
-              <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0" />
-              <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_559_31" />
-              <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_559_31" result="shape" />
-            </filter>
-          </defs>
-        </svg>
-      </span>
-    );
-  } else {
-    audioControl = (
-      <span className={`iconContainer 
-       `} onClick={() => toggleMuteAudio()}>
-        <svg style={{ paddingTop: '3px', transform: 'scale(1.2)' }} className="iconBasic" alt="Stop audio" xmlns="http://www.w3.org/2000/svg"
-          width="51" height="44" viewBox="0 0 41 38" fill="none">
-          <g filter="url(#filter0_d_559_31)">
-            <path d="M20.5001 23.8333C24.828 23.8333 28.3334 20.85 28.3334 17.1667V8.00001C28.3334 4.31668 24.828 1.33334 20.5001 1.33334C16.1722 1.33334 12.6667 4.31668 12.6667 8.00001V17.1667C12.6667 20.85 16.1722 23.8333 20.5001 23.8333Z" fill="#00cc00" stroke="#005691" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-            <path d="M5.5188 14.0833V16.9167C5.5188 23.95 12.2359 29.6667 20.5 29.6667C28.7642 29.6667 35.4813 23.95 35.4813 16.9167V14.0833M17.778 8.71667C19.5405 8.16667 21.4596 8.16667 23.2221 8.71667M18.9334 12.25C19.9713 12.0167 21.0484 12.0167 22.0863 12.25M20.5 29.6667V34.6667" stroke="#005691" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-          </g>
-          <defs>
-            <filter id="filter0_d_559_31" x="0.768799" y="0.583344" width="39.4624" height="42.8333" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-              <feFlood flood-opacity="0" result="BackgroundImageFix" />
-              <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha" />
-              <feOffset dy="4" />
-              <feGaussianBlur stdDeviation="2" />
-              <feComposite in2="hardAlpha" operator="out" />
-              <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0" />
-              <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_559_31" />
-              <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_559_31" result="shape" />
-            </filter>
-          </defs>
-        </svg>
-
-      </span>
-    );
-  }
-
-  if (videoMuted) {
-    videoControl = (
-      <span className={`iconContainer 
-     `} onClick={() => toggleMuteVideo()}>
-        <svg style={{ paddingTop: '5px', transform: 'scale(1.55)' }} className="iconAlternative" alt="Resume video" xmlns="http://www.w3.org/2000/svg" width="37" height="30" viewBox="0 0 49 46" fill="none">
-          <g filter="url(#filter0_d_563_43)">
-            <g clip-path="url(#clip0_563_43)">
-              <path d="M25.4054 32.3317H14.6087C9.21038 32.3317 7.41663 29.0067 7.41663 25.6658V12.3342C7.41663 7.33083 9.21038 5.66833 14.6087 5.66833H25.4054C30.8037 5.66833 32.5975 7.33083 32.5975 12.3342V25.6658C32.5975 30.6692 30.7866 32.3317 25.4054 32.3317V32.3317Z" fill="#FF0000" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-              <path d="M37.3467 27.075L32.5975 23.9875V13.9967L37.3467 10.9092C39.67 9.40503 41.5834 10.3234 41.5834 12.9675V25.0325C41.5834 27.6767 39.67 28.595 37.3467 27.075V27.075ZM23.6459 17.4167C24.3255 17.4167 24.9773 17.1665 25.4578 16.7211C25.9384 16.2757 26.2084 15.6716 26.2084 15.0417C26.2084 14.4118 25.9384 13.8077 25.4578 13.3623C24.9773 12.9169 24.3255 12.6667 23.6459 12.6667C22.9663 12.6667 22.3145 12.9169 21.8339 13.3623C21.3534 13.8077 21.0834 14.4118 21.0834 15.0417C21.0834 15.6716 21.3534 16.2757 21.8339 16.7211C22.3145 17.1665 22.9663 17.4167 23.6459 17.4167Z" fill="#FF0000" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-              <line x1="7.5088" y1="33.5743" x2="33.5088" y2="3.57429" stroke="black" stroke-width="1.3" />
-            </g>
-          </g>
-          <defs>
-            <filter id="filter0_d_563_43" x="0" y="0" width="49" height="46" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-              <feFlood flood-opacity="0" result="BackgroundImageFix" />
-              <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha" />
-              <feOffset dy="4" />
-              <feGaussianBlur stdDeviation="2" />
-              <feComposite in2="hardAlpha" operator="out" />
-              <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0" />
-              <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_563_43" />
-              <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_563_43" result="shape" />
-            </filter>
-            <clipPath id="clip0_563_43">
-              <rect width="41" height="38" fill="white" transform="translate(4)" />
-            </clipPath>
-          </defs>
-        </svg>
-      </span>
-    );
-  } else {
-    videoControl = (
-      <span className={`iconContainer 
-       `} onClick={() => toggleMuteVideo()}>
-        <svg style={{ paddingTop: '3px' }}
-          className="iconBasic" alt="Stop video" xmlns="http://www.w3.org/2000/svg" width="37" height="30" viewBox="0 0 37 30" fill="none">
-
-          <path d="M19.4055 28.3317H8.60883C3.2105 28.3317 1.41675 25.0067 1.41675 21.6658V8.33417C1.41675 3.33083 3.2105 1.66833 8.60883 1.66833H19.4055C24.8038 1.66833 26.5976 3.33083 26.5976 8.33417V21.6658C26.5976 26.6692 24.7867 28.3317 19.4055 28.3317Z" fill="#00cc00" stroke="#005691" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-          <path d="M31.3466 23.075L26.5974 19.9875V9.99666L31.3466 6.90916C33.6699 5.40499 35.5833 6.32333 35.5833 8.96749V21.0325C35.5833 23.6767 33.6699 24.595 31.3466 23.075V23.075ZM17.6458 13.4167C18.3254 13.4167 18.9772 13.1664 19.4577 12.721C19.9383 12.2756 20.2083 11.6716 20.2083 11.0417C20.2083 10.4118 19.9383 9.80768 19.4577 9.36228C18.9772 8.91688 18.3254 8.66666 17.6458 8.66666C16.9661 8.66666 16.3144 8.91688 15.8338 9.36228C15.3532 9.80768 15.0833 10.4118 15.0833 11.0417C15.0833 11.6716 15.3532 12.2756 15.8338 12.721C16.3144 13.1664 16.9661 13.4167 17.6458 13.4167Z" fill="#00cc00" stroke="#005691" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-
-        </svg>
-      </span>
-    );
-  }
-
-  screenShare = (
-    <span className={`iconContainer 
-     `} onClick={() => shareScreen()}>
-      <FaLaptop className="iconBasic" alt="Share screen" />
-    </span>
-  );
-  if (isMobileDevice() || isScreenSharing) {
-    screenShare = <></>;
-  }
-  if (isOnline) {
-    hangUp = (
-      <span className={`iconContainer 
-      `} onClick={() => nextUser()}>
-        <FaPhone className="iconAlternative" alt="End call" />
-      </span>
-    );
-  }
-  if (isFullScreen) {
-    fullscreenButton = (
-      <span
-        className={`iconContainer 
-         `}
-        onClick={() => {
-          setFullscreen(false);
-        }}
-      >
-        <FaCompressArrowsAlt className="iconAlternative" alt="fullscreen" />
-      </span>
-    );
-  } else {
-    fullscreenButton = (
-      <span
-        className={`iconContainer 
-         `}
-        onClick={() => {
-          setFullscreen(true);
-        }}
-      >   <svg className="iconBasic" alt="fullscreen" xmlns="http://www.w3.org/2000/svg" width="42" height="38" viewBox="0 0 42 38" fill="none">
-          <path d="M29.4821 0.521231C29.3433 0.523552 29.2302 0.526001 29.1444 0.528519C29.2034 0.589291 29.2719 0.658444 29.3491 0.735081C29.6523 1.03583 30.0736 1.4353 30.5387 1.86021C30.5389 1.86034 30.539 1.86047 30.5392 1.8606L32.2449 3.41106L32.6384 3.76879L32.2571 4.13953L31.8485 4.53683C31.848 4.53727 31.8476 4.53771 31.8471 4.53816C31.6601 4.72209 30.5486 5.74122 29.1511 7.02249C28.7121 7.42498 28.2449 7.85335 27.7693 8.28983L27.7674 8.29157C26.7633 9.20347 25.8442 10.0553 25.1731 10.6912C24.8372 11.0096 24.5655 11.2719 24.3769 11.4599C24.3329 11.5038 24.2942 11.5429 24.2607 11.5771C24.2836 11.5991 24.3091 11.6235 24.3373 11.6503C24.476 11.782 24.6718 11.9649 24.9113 12.1861C25.3899 12.628 26.0386 13.2189 26.7429 13.8504L26.7429 13.8504L26.7443 13.8516C27.8435 14.8449 28.4823 15.4123 28.8795 15.7322C29.0795 15.8931 29.1985 15.9751 29.272 16.0162C29.2741 16.0173 29.2761 16.0185 29.2781 16.0195C29.2878 16.0138 29.2992 16.0069 29.3123 15.9985C29.4257 15.926 29.6076 15.7871 29.9131 15.5275C30.5192 15.0128 31.5407 14.0852 33.3397 12.4361C33.3397 12.4361 33.3398 12.436 33.3398 12.436L37.4167 8.69538L37.7501 8.38947L38.0877 8.69077L39.8153 10.2328L39.8175 10.2348C40.2868 10.6588 40.7307 11.041 41.0667 11.3154C41.2048 11.4283 41.3216 11.5204 41.4127 11.5888C41.4271 11.5009 41.4422 11.3367 41.4532 11.0245C41.4791 10.2852 41.4792 8.87495 41.4792 6.08436C41.4792 3.69788 41.4739 2.27467 41.4531 1.42796C41.4427 1.00728 41.4287 0.742519 41.4115 0.577127C41.2966 0.565347 41.1144 0.554103 40.8233 0.544941C40.0001 0.519039 38.4323 0.511848 35.3729 0.502348C33.6411 0.497705 32.0493 0.500126 30.8804 0.507278C30.2957 0.510857 29.8181 0.515612 29.4821 0.521231ZM24.1374 11.4555C24.1351 11.4529 24.1338 11.4515 24.1337 11.4514C24.1336 11.4513 24.1347 11.4526 24.1374 11.4555ZM41.3871 0.419088C41.387 0.419041 41.3874 0.420782 41.3886 0.424021C41.3877 0.420698 41.3871 0.41913 41.3871 0.419088Z" fill="#00cc00" stroke="#005691" />
-          <path d="M8.67744 12.4711L8.67829 12.4719C9.78839 13.4749 10.8162 14.3917 11.5789 15.0607C11.9606 15.3955 12.2741 15.6667 12.4976 15.8551C12.6021 15.9432 12.6843 16.0109 12.7433 16.0579C12.7736 16.034 12.8101 16.0046 12.853 15.9694C12.999 15.8497 13.2037 15.6762 13.4533 15.4606C13.9518 15.0303 14.6206 14.44 15.3404 13.7943C16.4608 12.7869 17.099 12.2027 17.458 11.8404C17.5924 11.7046 17.6765 11.611 17.7286 11.5461C17.6448 11.4451 17.4967 11.2894 17.2402 11.0428C16.672 10.4965 15.6455 9.57351 13.8149 7.94337C13.8149 7.94332 13.8148 7.94327 13.8148 7.94322L9.67489 4.25993L9.25956 3.8904L9.67089 3.51642L11.3869 1.95624C11.3871 1.9561 11.3872 1.95596 11.3874 1.95581C11.8519 1.53148 12.2724 1.13029 12.5749 0.826771C12.6491 0.752324 12.7151 0.684835 12.7722 0.625112C12.6575 0.612935 12.4758 0.601747 12.1824 0.593335C11.3608 0.569786 9.79635 0.569725 6.70978 0.569725H6.70974C4.06956 0.56953 2.49255 0.574201 1.55328 0.593052C1.08196 0.602512 0.782619 0.615375 0.593816 0.63169C0.581061 0.632792 0.569023 0.633895 0.557674 0.63499C0.54724 0.735239 0.536955 0.889972 0.52874 1.12879C0.502761 1.88404 0.5 3.32874 0.5 6.16103C0.5 8.99331 0.502761 10.438 0.52874 11.1933C0.5363 11.413 0.545613 11.5616 0.555181 11.662C0.638215 11.5978 0.740134 11.5162 0.858188 11.4191C1.18704 11.1487 1.62369 10.773 2.08858 10.3578C2.55475 9.93657 2.99286 9.55268 3.32258 9.27287C3.48704 9.1333 3.62748 9.01712 3.73218 8.93445C3.78367 8.89379 3.83193 8.85694 3.87248 8.82849C3.89178 8.81495 3.91757 8.79746 3.94545 8.78139C3.95886 8.77366 3.982 8.76086 4.01092 8.74856C4.01133 8.74839 4.01181 8.74818 4.01236 8.74794C4.02891 8.74084 4.10845 8.70668 4.21376 8.70668C4.30098 8.70668 4.36624 8.72994 4.3854 8.73689C4.41323 8.74697 4.43462 8.7575 4.44624 8.76349C4.46982 8.77566 4.48812 8.7874 4.49675 8.79304C4.51574 8.80547 4.53286 8.81816 4.54416 8.82671C4.56867 8.84524 4.59801 8.86878 4.62915 8.89432C4.6928 8.94652 4.78107 9.02112 4.88958 9.11415C5.10741 9.30092 5.41573 9.56966 5.79097 9.89978C6.54185 10.5604 7.56507 11.4707 8.67744 12.4711ZM17.7978 11.6396C17.7985 11.641 17.7989 11.6417 17.7989 11.6417C17.799 11.6417 17.7986 11.641 17.7978 11.6396ZM0.398366 0.657857C0.398437 0.657888 0.399971 0.657506 0.402751 0.656614C0.399684 0.657379 0.398294 0.657825 0.398366 0.657857Z" fill="#00cc00" stroke="#005691" />
-          <path d="M4.61577 29.326L4.28136 29.6328L3.94369 29.3296L2.2161 27.7783L2.21606 27.7782C1.35303 27.0031 0.896434 26.6151 0.628004 26.4488C0.609508 26.5939 0.593954 26.8328 0.582434 27.2339C0.559009 28.0495 0.553711 29.4641 0.553711 31.9559C0.553711 34.3327 0.558994 35.7512 0.579862 36.5956C0.59021 37.0143 0.604142 37.2783 0.621299 37.4434C0.738119 37.455 0.923746 37.4658 1.22123 37.4741C2.06031 37.4976 3.66258 37.5 6.79564 37.5C9.92869 37.5 11.531 37.4976 12.37 37.4741C12.5807 37.4682 12.7353 37.4611 12.849 37.4533C12.7998 37.4032 12.7448 37.3481 12.6845 37.2885C12.3815 36.9891 11.9605 36.5921 11.4958 36.1722L11.4958 36.1722L11.4935 36.1702L9.7972 34.6185L9.41286 34.2669L9.77985 33.8973L10.4211 33.2514C10.4213 33.2512 10.4216 33.2509 10.4218 33.2507C10.7838 32.8839 12.6509 31.1689 14.5609 29.4431L14.5616 29.4425C16.0815 28.074 16.9438 27.2875 17.4267 26.8127C17.6383 26.6046 17.7632 26.4697 17.8357 26.3803C17.7841 26.3159 17.7005 26.2226 17.5664 26.0868C17.2072 25.7232 16.5662 25.1343 15.4352 24.1124C14.3209 23.1055 13.6687 22.5284 13.2634 22.2025C13.0594 22.0385 12.9367 21.9536 12.8607 21.9106C12.8594 21.9098 12.8581 21.9091 12.8568 21.9084C12.8472 21.9141 12.8361 21.9209 12.8234 21.929C12.708 22.0032 12.5232 22.1447 12.2137 22.4078C11.5997 22.9298 10.565 23.8694 8.7451 25.5376C8.74505 25.5376 8.74499 25.5377 8.74494 25.5377L4.61577 29.326ZM0.645841 37.6022C0.645881 37.6021 0.645422 37.6004 0.644344 37.5973C0.645262 37.6007 0.645801 37.6023 0.645841 37.6022Z" fill="#00cc00" stroke="#005691" />
-          <path d="M24.1271 26.2826C24.1271 26.2826 24.1274 26.2834 24.1283 26.285C24.1276 26.2834 24.1271 26.2826 24.1271 26.2826ZM24.4734 26.0838C24.3389 26.2203 24.2537 26.3154 24.2003 26.3818C24.2866 26.4856 24.4386 26.645 24.7005 26.8966C25.2781 27.4513 26.3179 28.3863 28.1643 30.0307C28.1643 30.0308 28.1644 30.0308 28.1644 30.0309L32.357 33.7618L32.771 34.1302L32.3621 34.5043L30.6555 36.0652L30.6555 36.0652L30.6532 36.0673C30.2057 36.4717 29.8676 36.7826 29.6173 37.0268C29.4628 37.1775 29.3498 37.2953 29.2685 37.3877C29.4386 37.4035 29.7009 37.4163 30.1124 37.426C31.0177 37.4472 32.5856 37.452 35.3427 37.452C37.8505 37.452 39.4259 37.4448 40.392 37.4258C40.8763 37.4163 41.1991 37.404 41.4068 37.3889C41.4198 37.388 41.4321 37.387 41.4439 37.3861C41.4547 37.2742 41.4648 37.1058 41.4729 36.852C41.4975 36.0732 41.5002 34.6203 41.5002 31.8599C41.5002 29.1192 41.4948 27.6659 41.4689 26.8827C41.4614 26.6586 41.4525 26.4991 41.4429 26.3854C41.3654 26.4462 41.2735 26.5204 41.1693 26.6065C40.8379 26.8804 40.3986 27.2609 39.9341 27.6807L39.9317 27.6829L38.2144 29.2152L37.8887 29.5058L37.5568 29.2223L36.2091 28.0711C36.209 28.0711 36.209 28.0711 36.209 28.0711C35.4652 27.4377 33.5751 25.7581 32.0053 24.3397L32.0045 24.339C30.7685 23.2175 30.0578 22.5828 29.6225 22.2276C29.4032 22.0487 29.2734 21.9572 29.1934 21.9111C29.1879 21.9079 29.1829 21.9051 29.1783 21.9026C29.1751 21.9043 29.1718 21.9062 29.1682 21.9082C29.095 21.9491 28.9754 22.0316 28.7726 22.1953C28.3698 22.5203 27.7178 23.0999 26.5869 24.1217C25.4723 25.1288 24.8337 25.718 24.4734 26.0838ZM29.108 37.6033C29.1081 37.6033 29.109 37.6015 29.1102 37.5981C29.1085 37.6017 29.1079 37.6034 29.108 37.6033ZM29.0485 37.342C29.046 37.3395 29.0444 37.3383 29.0443 37.3383C29.0442 37.3383 29.0454 37.3395 29.0485 37.342ZM41.6413 37.3619C41.6411 37.3618 41.6378 37.3625 41.6321 37.3642C41.6386 37.3628 41.6415 37.362 41.6413 37.3619Z" fill="#00cc00" stroke="#005691" />
-        </svg>
-      </span>
-    );
-  }
-
-  const handleDragStart = (e) => e.preventDefault()
-  const filterOptions = [
-    <img onDragStart={handleDragStart} role="presentation" onClick={(e) => {
-      e.preventDefault()
-      setFilter('none')
-    }} id='bgInvertedImages'
-      className={`filter-image  ${filter == 'none' && 'opacity'}`} height={55} width={55} src='/assets/noSign.png' />
-    ,
-
-    <img onDragStart={handleDragStart} role="presentation" onClick={(e) => {
-      e.preventDefault()
-      setFilter('inverted')
-    }}
-      className={`filter-image  ${filter == 'inverted' && 'opacity'}`} height={55} width={55} src='/assets/inveted-icon.png' />
-    ,
-
-    <img onDragStart={handleDragStart} role="presentation" onClick={(e) => {
-      e.preventDefault()
-      setFilter('laCasaMask')
-    }}
-      className={`filter-image  ${filter == 'laCasaMask' && 'opacity'}`} height={55} width={55} src='/assets/laCasaMask.jpg' />
-    ,
-
-    <img onDragStart={handleDragStart} role="presentation" onClick={(e) => {
-      e.preventDefault()
-      setFilter('AnoymnMask')
-    }}
-      className={`filter-image  ${filter == 'AnoymnMask' && 'opacity'}`} height={55} width={55} src='/assets/anomny.png' />
-    ,
-
-
-    <img onDragStart={handleDragStart} role="presentation" onClick={(e) => {
-      e.preventDefault()
-      setFilter('covidMask')
-    }}
-      className={`filter-image  ${filter == 'covidMask' && 'opacity'}`} height={55} width={55} src='/assets/covidMask.png' />
-    ,
-
-    <img onDragStart={handleDragStart} role="presentation" onClick={(e) => {
-      e.preventDefault()
-      setFilter('driftMask')
-    }}
-      className={`filter-image  ${filter == 'driftMask' && 'opacity'}`} height={55}
-      width={55} src='/assets/driftMaksIcon.png' />
-    , <img onDragStart={handleDragStart} role="presentation" onClick={(e) => {
-      e.preventDefault()
-      setFilter('scaryMask')
-    }}
-      className={`filter-image  ${filter == 'scaryMask' && 'opacity'}`}
-      height={55} width={55} src='/assets/scaryIconMask.png' />,
-    <img onDragStart={handleDragStart} role="presentation" onClick={(e) => {
-      e.preventDefault()
-      setFilter('heartEmoji')
-    }}
-      className={`filter-image  ${filter == 'heartEmoji' && 'opacity'}`}
-      height={55} width={55} src='/assets/hearteyesIcon.jfif' />,
-    <img onDragStart={handleDragStart} role="presentation" onClick={(e) => {
-      e.preventDefault()
-      setFilter('bandana_mask')
-    }}
-      className={`filter-image  ${filter == 'bandana_mask' && 'opacity'}`}
-      height={55} width={55} src='/assets/bandanaIcon.png' />,
-    <img onDragStart={handleDragStart} role="presentation" onClick={(e) => {
-      e.preventDefault()
-      setFilter('welding_mask')
-    }}
-      className={`filter-image  ${filter == 'welding_mask' && 'opacity'}`}
-      height={55} width={55} src='/assets/welding_maskIcon.png' />,
-    <img onDragStart={handleDragStart} role="presentation" onClick={(e) => {
-      e.preventDefault()
-      setFilter('masquerade_cat_mask_3')
-    }}
-      className={`filter-image  ${filter == 'masquerade_cat_mask_3' && 'opacity'}`}
-      height={55} width={55} src='/assets/masquerade_cat_mask_3icon.png' />,
-    <img onDragStart={handleDragStart} role="presentation" onClick={(e) => {
-      e.preventDefault()
-      setFilter('forest_mask')
-    }}
-      className={`filter-image  ${filter == 'forest_mask' && 'opacity'}`}
-      height={55} width={55} src='/assets/forestmaskIcon.png' />,
-    <img onDragStart={handleDragStart} role="presentation" onClick={(e) => {
-      e.preventDefault()
-      setFilter('clown_2_mask')
-    }}
-      className={`filter-image  ${filter == 'clown_2_mask' && 'opacity'}`}
-      height={55} width={55} src='/assets/clownIconMask.png' />,
-
-    <img onDragStart={handleDragStart} role="presentation" onClick={(e) => {
-      e.preventDefault()
-      setFilter('magicHat')
-    }}
-      className={`filter-image  ${filter == 'magicHat' && 'opacity'}`}
-      height={55} width={55} src='/assets/noenglassesIcon.png' />,
-    <img onDragStart={handleDragStart} role="presentation" onClick={(e) => {
-      e.preventDefault()
-      setFilter('joker_mask')
-    }}
-      className={`filter-image  ${filter == 'joker_mask' && 'opacity'}`}
-      height={55} width={55} src='/assets/jokerMaskIcon.png' />,
-
-    <img onDragStart={handleDragStart} role="presentation" onClick={(e) => {
-      e.preventDefault()
-      setFilter('batman_mask')
-    }}
-      className={`filter-image  ${filter == 'batman_mask' && 'opacity'}`}
-      height={55} width={55} src='/assets/batmanMaskIcon.png' />,
-    <img onDragStart={handleDragStart} role="presentation" onClick={(e) => {
-      e.preventDefault()
-      setFilter('egypt_cat_mask')
-    }}
-      className={`filter-image  ${filter == 'egypt_cat_maskIcon' && 'opacity'}`}
-      height={55} width={55} src='/assets/egypt_cat_maskIcon.png' />
-    ,
-    <img onDragStart={handleDragStart} role="presentation" onClick={(e) => {
-      e.preventDefault()
-      setFilter('samurai_mask')
-    }}
-      className={`filter-image  ${filter == 'samurai_mask' && 'opacity'}`}
-      height={55} width={55} src='/assets/samuraMaskIcon.png' />
-    ,
-    <img onDragStart={handleDragStart} role="presentation" onClick={(e) => {
-      e.preventDefault()
-      setFilter('bunnyEars')
-    }}
-      className={`filter-image  ${filter == 'bunnyEars' && 'opacity'}`}
-      height={55} width={55} src='/assets/bunnyEars.png' />
-
-
-
-  ]
+  // Controls are now rendered via <ControlBar> component
+  // Filter options are now rendered via <FilterCarousel> component
   function getWidthBasedOnAuth() {
     if (userAuthPrefernce === 'phoneNumberLogin') {
       return 26
@@ -1528,19 +1282,47 @@ function App() {
   }
   let landingHTML = (
     <>
-      <Navigation setisDashboard={setisDashboard} isDashboard={isDashboard} online={users.length} />
+      <Navigation isStarted={isStarted} setisDashboard={setisDashboard} isDashboard={isDashboard} online={users.length} />
       <main>
+
         <div className="mainContainer">
+
+      {users?.length !== undefined && !isStarted&& (
+        <div className="onlineText nav-online">
+          <span className="nav-online-dot" />
+          {users?.length} online
+        </div>
+      )}
           {!isShowDesktopChatBox &&
             <>
-              {isOnline && <p className="alertText" style={{ marginTop: '2rem' }}>Connected!</p>}
+              {isOnline && <p className="alertText connectedBadge">Connected!</p>}
               {isOnline && userGame == 'ticTak' ?
                 <TicTak isX={GameData?.isX} sendBoardSocket={sendBoardSocket}
                   passedXIndex={passedXIndex} setPassedXIndex={setPassedXIndex} /> : null}
             </>
           }
-          {searchingPartner && !isOnline ? <p className="alertText">finding a stranger<span id='wait'></span>
-          </p> : null}
+          {searchingPartner && !isOnline ? (
+            <div className="searchingCont">
+              <p className="alertText searchingText">
+                Looking for a {gameLabel(userGame)} partner<span id='wait'></span>
+              </p>
+              <div className="searchingGameSwitch">
+                <label className="searchingGameSwitchLabel" htmlFor="searchingGameSelect">Game:</label>
+                <select
+                  id="searchingGameSelect"
+                  className="searchingGameSelect"
+                  value={userGame}
+                  onChange={(e) => setUserGame(e.target.value)}
+                  title="Change the game you're matching for"
+                >
+                  <option value="no-game">Chat only</option>
+                  <option value="chess">Chess</option>
+                  <option value="ticTak">Tic-Tac-Toe</option>
+                  <option value="superTicTak">Super Tic-Tac-Toe</option>
+                </select>
+              </div>
+            </div>
+          ) : null}
           {isSendRequst && !isMobile ?
             <div id='addFriendCont'>
               <p className="friendStatusText alertText">
@@ -1589,7 +1371,7 @@ function App() {
                       {!isShowDesktopChatBox ?
                         <>
                           <svg className='chatOpener chatOpenerDesktop scaler' onClick={() => setisShowDesktopChatBox(!isShowDesktopChatBox)}
-                            style={{ position: 'absolute', top: '10px', left: '10px', zIndex: '10000000000000', cursor: 'pointer' }}
+                            style={{ position: 'absolute', top: '64px', left: '10px', zIndex: '10000000000000', cursor: 'pointer' }}
                             xmlns="http://www.w3.org/2000/svg" width="42" height="42" viewBox="0 0 42 42" fill="red">
                             <path d="M14.875 33.25H14C7 33.25 3.5 31.5 3.5 22.75V14C3.5 7 7 3.5 14 3.5H28C35 3.5 38.5 7 38.5 14V22.75C38.5 29.75 35 33.25 28 33.25H27.125C26.5825 33.25 26.0575 33.5125 25.725 33.95L23.1 37.45C21.945 38.99 20.055 38.99 18.9 37.45L16.275 33.95C15.995 33.565 15.3475 33.25 14.875 33.25Z" fill="#005691" stroke="#005691" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
                             <path d="M27.993 19.25H28.0105M20.9912 19.25H21.0087M13.9912 19.25H14.0052" stroke="#EEEEEE" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
@@ -1600,7 +1382,7 @@ function App() {
                         </>
                         :
                         <svg className='chatOpener chatOpenerDesktop scaler' onClick={() => setisShowDesktopChatBox(!isShowDesktopChatBox)}
-                          style={{ position: 'absolute', top: '10px', left: '10px', zIndex: '10000000000000', cursor: 'pointer' }} xmlns="http://www.w3.org/2000/svg" width="42" height="42" viewBox="0 0 42 42" fill="none">
+                          style={{ position: 'absolute', top: '64px', left: '10px', zIndex: '10000000000000', cursor: 'pointer' }} xmlns="http://www.w3.org/2000/svg" width="42" height="42" viewBox="0 0 42 42" fill="none">
                           <path d="M14.875 33.25H14C7 33.25 3.5 31.5 3.5 22.75V14C3.5 7 7 3.5 14 3.5H28C35 3.5 38.5 7 38.5 14V22.75C38.5 29.75 35 33.25 28 33.25H27.125C26.5825 33.25 26.0575 33.5125 25.725 33.95L23.1 37.45C21.945 38.99 20.055 38.99 18.9 37.45L16.275 33.95C15.995 33.565 15.3475 33.25 14.875 33.25Z" fill="#005691" stroke="#005691" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
                           <path d="M27.993 19.25H28.0105M20.9912 19.25H21.0087M13.9912 19.25H14.0052" stroke="#EEEEEE" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
                         </svg>
@@ -1627,14 +1409,8 @@ function App() {
                       }}>
 
                       </div>
-                      <button className="chatButton" type="submit">
-                        <svg style={{
-                          position: 'absolute',
-                          top: '0.8rem',
-                          right: '0.5rem'
-                        }} xmlns="http://www.w3.org/2000/svg" width="44" height="38" viewBox="0 0 54 46" fill="none">
-                          <path d="M53.8379 1.30494C53.8055 1.25536 53.7838 1.20564 53.7515 1.16864C53.449 0.746882 52.9522 0.61045 52.5201 0.809064L0.695531 23.4542C0.241927 23.6524 -0.0389188 24.1612 0.00438498 24.7188C0.0368342 25.2647 0.393205 25.7233 0.868403 25.8228L15.0397 28.9851L18.075 44.2267L18.0857 44.3137C18.1073 44.4126 18.1289 44.4996 18.1721 44.5862C18.1937 44.6359 18.2261 44.6979 18.2585 44.7476C18.3016 44.822 18.3557 44.8842 18.3989 44.9459C18.5393 45.0948 18.7121 45.2063 18.8957 45.2438C18.9174 45.256 18.9497 45.2683 18.9714 45.2683C19.0255 45.2683 19.0903 45.2808 19.1442 45.2808C19.2198 45.2808 19.2846 45.2683 19.3601 45.256C19.3926 45.2438 19.4249 45.2438 19.4681 45.219C19.479 45.219 19.4897 45.219 19.5006 45.2064C19.5653 45.1816 19.6194 45.1571 19.6734 45.1197H19.6843C19.7058 45.0949 19.7383 45.0824 19.7598 45.0576L34.6224 33.0655L43.0258 34.8884C43.0906 34.9009 43.1663 34.9009 43.2311 34.9009C43.6847 34.9009 44.0951 34.5784 44.2464 34.0824L53.9352 2.39627C53.9567 2.33448 53.9676 2.27243 53.9783 2.21038C53.9999 2.12367 53.9999 2.02449 53.9999 1.93752C53.9999 1.71424 53.946 1.49083 53.8379 1.30494ZM25.6034 29.0969C25.5386 29.1587 25.4738 29.2455 25.4413 29.3325C25.4198 29.345 25.4089 29.3573 25.3982 29.3821L19.587 40.717L17.1676 28.5262L44.0196 9.66366L25.6034 29.0969Z" fill="#4CB1F7" />
-                        </svg>
+                      <button className="chatButton" type="submit" aria-label="Send message">
+                        <FaPaperPlane size={24} color="#4CB1F7" aria-hidden="true" style={{ transform: 'rotate(45deg)' }} />
                       </button>
                     </form>
                   </div>
@@ -1667,12 +1443,12 @@ function App() {
 
 
 
-      {isMobile && isOnline && !IsopenChat && !isOpenGameMobile ? <svg style={{ position: 'absolute', top: '10px', left: '10px', zIndex: '10000000000000', cursor: 'pointer' }} className='chatOpener scaler' onClick={() => setIsopenChat(!IsopenChat)} xmlns="http://www.w3.org/2000/svg" width="42" height="42" viewBox="0 0 42 42" fill="none">
+      {isMobile && isOnline && !IsopenChat && !isOpenGameMobile ? <svg style={{ position: 'absolute', top: '64px', left: '10px', zIndex: '10000000000000', cursor: 'pointer' }} className='chatOpener scaler' onClick={() => setIsopenChat(!IsopenChat)} xmlns="http://www.w3.org/2000/svg" width="42" height="42" viewBox="0 0 42 42" fill="none">
         <path d="M14.875 33.25H14C7 33.25 3.5 31.5 3.5 22.75V14C3.5 7 7 3.5 14 3.5H28C35 3.5 38.5 7 38.5 14V22.75C38.5 29.75 35 33.25 28 33.25H27.125C26.5825 33.25 26.0575 33.5125 25.725 33.95L23.1 37.45C21.945 38.99 20.055 38.99 18.9 37.45L16.275 33.95C15.995 33.565 15.3475 33.25 14.875 33.25Z" fill="#005691" stroke="#005691" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
         <path d="M27.993 19.25H28.0105M20.9912 19.25H21.0087M13.9912 19.25H14.0052" stroke="#EEEEEE" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
       </svg> : null}
       {isMobile && isOnline && IsopenChat ? <svg className='chatOpener scaler'
-        onClick={() => setIsopenChat(false)} style={{ position: 'absolute', top: '10px', left: '10px', zIndex: '10000000000000', cursor: 'pointer' }} xmlns="http://www.w3.org/2000/svg" width="29" height="34" viewBox="0 0 29 34" fill="none">
+        onClick={() => setIsopenChat(false)} style={{ position: 'absolute', top: '64px', left: '10px', zIndex: '10000000000000', cursor: 'pointer' }} xmlns="http://www.w3.org/2000/svg" width="29" height="34" viewBox="0 0 29 34" fill="none">
         <path d="M0.931818 18.2727V15.3636L28.75 0.022728V4.47727L5.93182 16.7955L6.15909 16.3864V17.25L5.93182 16.8409L28.75 29.1591V33.6136L0.931818 18.2727Z" fill="#005691" />
       </svg>
         : null}
@@ -1684,7 +1460,7 @@ function App() {
         : null
       }
       {isMobile && isOnline && isOpenGameMobile ? <svg className='chatOpener scaler'
-        onClick={() => setisOpenGameMobile(false)} style={{ position: 'absolute', top: '10px', left: '10px', zIndex: '10000000000000', cursor: 'pointer' }} xmlns="http://www.w3.org/2000/svg" width="29" height="34" viewBox="0 0 29 34" fill="none">
+        onClick={() => setisOpenGameMobile(false)} style={{ position: 'absolute', top: '64px', left: '10px', zIndex: '10000000000000', cursor: 'pointer' }} xmlns="http://www.w3.org/2000/svg" width="29" height="34" viewBox="0 0 29 34" fill="none">
         <path d="M0.931818 18.2727V15.3636L28.75 0.022728V4.47727L5.93182 16.7955L6.15909 16.3864V17.25L5.93182 16.8409L28.75 29.1591V33.6136L0.931818 18.2727Z" fill="#005691" />
       </svg>
         : null}
@@ -1692,20 +1468,14 @@ function App() {
 
 
       {isMobile && isOnline && !isFullScreen && numberOfUnreadMessages > 0 ? <span className='numberOfMessages'>{numberOfUnreadMessages}</span> : null}
-      {!isStarted &&
-        <div className="onlineText">
-          {" "}
-          <FaUser className="onlineIcon" alt="users" />
-          {users.length} {" "}
-          online
-        </div>}
+      {/* Online count is shown in Navigation */}
       {isStarted &&
         <div className="buttonsCont">
           <button id='stopButton' onClick={(e) => stop(e)} className="button">stop</button>
           <button onClick={() => nextUser()} className="button">next</button>
         </div>
       }
-      <input style={{ display: 'none' }} id='filterValue' type="text" value={filter} ref={filterValue} />
+
 
       <span className="callContainer">
         <div
@@ -1718,9 +1488,27 @@ function App() {
         >
 
           {PartnerVideo}
+          {!isOnline && (
+            <div className="partnerVideoPlaceholder" aria-live="polite">
+              <div className="partnerVideoPlaceholderInner">
+                <div className="partnerVideoPlaceholderAvatar">
+                  <FaUser size={42} />
+                </div>
+                <p className="partnerVideoPlaceholderTitle">
+                  {searchingPartner ? 'Looking for a stranger…' : 'Click Start to find a stranger'}
+                </p>
+                <p className="partnerVideoPlaceholderHint">
+                  {searchingPartner
+                    ? 'Hang tight, we are matching you now.'
+                    : 'Press Start to begin a new conversation.'}
+                </p>
+              </div>
+            </div>
+          )}
           {isAbleToBeFriends && !isSendRequst && !isReciveRequst ? <div id='addFriendCont ' className="addFriendmainCont">
-            <img src='/assets/addFriend-removebg.png' onClick={() => sendFriendRequst()} title='add friend' className='addFriendImg' height='35' width='35'
-              alt='add friend Icon' />
+            <button onClick={() => sendFriendRequst()} title='Add friend' className='addFriendBtn' aria-label='Add friend'>
+              <FaUserPlus size={18} />
+            </button>
           </div> : null
           }
 
@@ -1746,31 +1534,79 @@ function App() {
           }
         >
           {UserVideo}
-          <h2 id='loadingFilters'>loading filters </h2>
+          {filtersEngaged && <LazyFilters2 />}
+
+          {/* Desktop: controls overlaid at bottom of user video */}
+          {!isMobile && !IsopenChat && !isOpenGameMobile && (
+            <div className={"desktop-ctrl-wrapper " + (isFullScreen ? "controlsFull" : "")}>
+              {ShowFilterOptions && (
+                <FilterCarousel
+                  filter={filter}
+                  setFilter={setFilter}
+                  onClose={() => setShowFilterOptions(false)}
+                />
+              )}
+              <ControlBar
+                audioMuted={audioMuted}
+                videoMuted={videoMuted}
+                isFullScreen={isFullScreen}
+                isScreenSharing={isScreenSharing}
+                ShowFilterOptions={ShowFilterOptions}
+                filter={filter}
+                isMobile={isMobile}
+                isOnline={isOnline}
+                onToggleAudio={toggleMuteAudio}
+                onToggleVideo={toggleMuteVideo}
+                onShareScreen={shareScreen}
+                onToggleFullscreen={() => setFullscreen(!isFullScreen)}
+                onToggleFilters={() => setShowFilterOptions(!ShowFilterOptions)}
+              />
+            </div>
+          )}
         </div>
+
+        {/* Hidden elements needed by the filter library */}
+        <input style={{ display: 'none' }} id='filterValue' type="text" defaultValue={filter} ref={filterValue} />
+        <button id='chooseFilter' style={{ display: 'none' }} aria-hidden="true" />
+
         <div className='startSearchingCont'>
           {isMobile && <p className='startSearching' style={{ fontSize: '1.5rem' }} >start searching for a stranger </p>}
           {isMobile && !isStarted && isStarted1Mobile && <button className='StartButton' onClick={() => nextUser()} style={{ display: 'block', padding: '1rem 2rem', fontSize: '1.5rem', width: '20rem', alignText: 'center' }} >Start searching</button>}
         </div>
 
-        {!IsopenChat && !isOpenGameMobile ? <div
-          className={
-            "controlsContainer flex " + (isFullScreen ? "controlsFull" : "")
-          }
-        >
-          {!ShowFilterOptions &&
-            <>
-              {audioControl}
-              {videoControl}
-              {/* {screenShare} */}
-              {fullscreenButton}
-            </>}
-
-        </div> : null}
+        {/* Mobile: controls at bottom of screen */}
+        {isMobile && !IsopenChat && !isOpenGameMobile && (
+          <div className={"controlsContainer ctrl-bar-wrapper " + (isFullScreen ? "controlsFull" : "")}>
+            <ControlBar
+              audioMuted={audioMuted}
+              videoMuted={videoMuted}
+              isFullScreen={isFullScreen}
+              isScreenSharing={isScreenSharing}
+              ShowFilterOptions={ShowFilterOptions}
+              filter={filter}
+              isMobile={isMobile}
+              isOnline={isOnline}
+              onToggleAudio={toggleMuteAudio}
+              onToggleVideo={toggleMuteVideo}
+              onShareScreen={shareScreen}
+              onToggleFullscreen={() => setFullscreen(!isFullScreen)}
+              onToggleFilters={() => setShowFilterOptions(!ShowFilterOptions)}
+            />
+            {ShowFilterOptions && (
+              <div className="filter-carousel-wrapper">
+                <FilterCarousel
+                  filter={filter}
+                  setFilter={setFilter}
+                  onClose={() => setShowFilterOptions(false)}
+                />
+              </div>
+            )}
+          </div>
+        )}
       </span>
 
       <div className={`${isFullScreen && 'gender-contFullSize'}`}>
-        {isMobile && <> {searchingPartner && !isOnline ? <p className='alertText'>Finding a stranger
+        {isMobile && <> {searchingPartner && !isOnline ? <p className='alertText'>Looking for a {gameLabel(userGame)} partner
           <span id='waitMobile'></span>
 
         </p> : null}
@@ -1794,12 +1630,14 @@ function App() {
               <ChooseGame userGame={userGame} setUserGame={setUserGame} />
             </div>}
 
-            <span style={{ zIndex: '300000', cursor: 'pointer' }} className='desktopDarkModeControls' onClick={() => setisDarkMode(!isDarkMode)}>
+            <p className="chatFiltersLabel">Chat filters:</p>
+            <div className="filtersRow">
+            <span style={{ zIndex: '300000', cursor: 'pointer' }} className='desktopDarkModeControls filtersRowItem' onClick={() => setisDarkMode(!isDarkMode)} title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}>
               {isDarkMode ?
-                <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg width="28" height="28" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M25.0002 38.5417C28.5916 38.5417 32.036 37.115 34.5756 34.5754C37.1151 32.0359 38.5418 28.5915 38.5418 25C38.5418 21.4086 37.1151 17.9642 34.5756 15.4246C32.036 12.8851 28.5916 11.4584 25.0002 11.4584C21.4087 11.4584 17.9643 12.8851 15.4248 15.4246C12.8852 17.9642 11.4585 21.4086 11.4585 25C11.4585 28.5915 12.8852 32.0359 15.4248 34.5754C17.9643 37.115 21.4087 38.5417 25.0002 38.5417Z" fill="#F9B42E" stroke="#F9B42E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
                   <path d="M39.8748 39.875L39.604 39.6041M39.604 10.3958L39.8748 10.125L39.604 10.3958ZM10.1248 39.875L10.3957 39.6041L10.1248 39.875ZM24.9998 4.33329V4.16663V4.33329ZM24.9998 45.8333V45.6666V45.8333ZM4.33317 25H4.1665H4.33317ZM45.8332 25H45.6665H45.8332ZM10.3957 10.3958L10.1248 10.125L10.3957 10.3958Z" stroke="#F9B42E" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
-                </svg> : <svg xmlns="http://www.w3.org/2000/svg" width="50" height="47" viewBox="0 0 50 47" fill="none">
+                </svg> : <svg xmlns="http://www.w3.org/2000/svg" width="28" height="26" viewBox="0 0 50 47" fill="none">
                   <g filter="url(#filter0_dd_496_121)">
                     <path d="M4.22919 22.875C4.97919 33.6042 14.0834 42.3334 24.9792 42.8125C32.6667 43.1459 39.5417 39.5625 43.6667 33.9167C45.375 31.6042 44.4584 30.0625 41.6042 30.5834C40.2084 30.8334 38.7709 30.9375 37.2709 30.875C27.0834 30.4584 18.75 21.9375 18.7084 11.875C18.6875 9.16671 19.25 6.60421 20.2709 4.27087C21.3959 1.68754 20.0417 0.458375 17.4375 1.56254C9.18752 5.04171 3.54169 13.3542 4.22919 22.875Z" fill="#BBDDDD" />
                     <path d="M4.22919 22.875C4.97919 33.6042 14.0834 42.3334 24.9792 42.8125C32.6667 43.1459 39.5417 39.5625 43.6667 33.9167C45.375 31.6042 44.4584 30.0625 41.6042 30.5834C40.2084 30.8334 38.7709 30.9375 37.2709 30.875C27.0834 30.4584 18.75 21.9375 18.7084 11.875C18.6875 9.16671 19.25 6.60421 20.2709 4.27087C21.3959 1.68754 20.0417 0.458375 17.4375 1.56254C9.18752 5.04171 3.54169 13.3542 4.22919 22.875Z" stroke="#27415D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
@@ -1824,11 +1662,11 @@ function App() {
                   </defs>
                 </svg>}
             </span>
-            <div id='genderPrefrenceCont'>
-              <div>
-                <p style={{ color: '#005691', display: 'block', margin: '0' }}>chat filters:</p>
-                <div>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" viewBox="0 0 35 35" fill="none">
+            <span className="filtersDivider" aria-hidden="true" />
+            <div id='genderPrefrenceCont' className="filtersRowItem">
+              <div className="filtersDropdownGroup">
+                <div className="filtersDropdownInner">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="filtersPeopleIcon" width="22" height="22" viewBox="0 0 35 35" fill="none">
                     <path d="M17.5 17.5C19.4339 17.5 21.2885 16.7317 22.656 15.3643C24.0234 13.9968 24.7917 12.1422 24.7917 10.2083C24.7917 8.27442 24.0234 6.41976 22.656 5.05231C21.2885 3.68485 19.4339 2.91663 17.5 2.91663C15.5661 2.91663 13.7114 3.68485 12.344 5.05231C10.9765 6.41976 10.2083 8.27442 10.2083 10.2083C10.2083 12.1422 10.9765 13.9968 12.344 15.3643C13.7114 16.7317 15.5661 17.5 17.5 17.5ZM4.9729 32.0833C4.9729 26.4395 10.5875 21.875 17.5 21.875L4.9729 32.0833ZM26.5417 31.2083C27.7793 31.2083 28.9663 30.7166 29.8415 29.8415C30.7167 28.9663 31.2083 27.7793 31.2083 26.5416C31.2083 25.304 30.7167 24.117 29.8415 23.2418C28.9663 22.3666 27.7793 21.875 26.5417 21.875C25.304 21.875 24.117 22.3666 23.2418 23.2418C22.3666 24.117 21.875 25.304 21.875 26.5416C21.875 27.7793 22.3666 28.9663 23.2418 29.8415C24.117 30.7166 25.304 31.2083 26.5417 31.2083ZM32.0833 32.0833L30.625 30.625L32.0833 32.0833Z" fill={isDarkMode ? '#E4EDDC' : '#005691'} />
                     <path d="M4.9729 32.0833C4.9729 26.4395 10.5875 21.875 17.5 21.875M32.0833 32.0833L30.625 30.625M17.5 17.5C19.4339 17.5 21.2885 16.7317 22.656 15.3643C24.0234 13.9968 24.7917 12.1422 24.7917 10.2083C24.7917 8.27442 24.0234 6.41976 22.656 5.05231C21.2885 3.68485 19.4339 2.91663 17.5 2.91663C15.5661 2.91663 13.7114 3.68485 12.344 5.05231C10.9765 6.41976 10.2083 8.27442 10.2083 10.2083C10.2083 12.1422 10.9765 13.9968 12.344 15.3643C13.7114 16.7317 15.5661 17.5 17.5 17.5ZM26.5417 31.2083C27.7793 31.2083 28.9663 30.7166 29.8415 29.8415C30.7167 28.9663 31.2083 27.7793 31.2083 26.5416C31.2083 25.304 30.7167 24.117 29.8415 23.2418C28.9663 22.3666 27.7793 21.875 26.5417 21.875C25.304 21.875 24.117 22.3666 23.2418 23.2418C22.3666 24.117 21.875 25.304 21.875 26.5416C21.875 27.7793 22.3666 28.9663 23.2418 29.8415C24.117 30.7166 25.304 31.2083 26.5417 31.2083Z" stroke={isDarkMode ? '#E4EDDC' : '#005691'} stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
                     <circle cx="26.5" cy="26.5" r="5.5" fill={isDarkMode ? '#E4EDDC' : '#00cc00'} />
@@ -1885,6 +1723,7 @@ function App() {
                   </button>
                 </div>
               </div>
+            </div>
             </div>
           </div>
         </div>

@@ -1,175 +1,129 @@
-@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 @import "./variables.scss";
 @import "react-alice-carousel/lib/scss/alice-carousel.scss";
 
-html,
-body {
+/* ─── Reset & base ─────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
   max-width: 100%;
   overflow-x: hidden !important;
 }
 
+body {
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: $text;
+  background-color: $bg;
+  line-height: 1.55;
+  overflow-x: hidden;
+  font-feature-settings: 'cv11', 'ss01';
+  -webkit-font-smoothing: antialiased;
 
-.desktopHidden {
-  display: none !important;
+  /* Stage offset — extra horizontal padding past 1400px so the absolutely
+     positioned video / chat / buttons cluster stays centered on wide screens. */
+  --stage-offset: max(0px, calc((100vw - 1400px) / 2));
 }
 
-* {
-  transition: background-color 0.5s ease;
-
+@media screen and (max-width: 860px) {
+  body { --stage-offset: 0px; }
 }
+
+button { font-family: inherit; }
+
+/* ─── Utilities ─────────────────────────────────────────────────── */
+.desktopHidden { display: none !important; }
 
 #loadingFilters {
   display: none !important;
   visibility: hidden;
 }
 
-body {
-  margin: 0;
-  font-family: 'Montserrat', sans-serif;
-  color: $font-color;
-  background-color: #E8F1F5;
-  line-height: 2rem;
-  overflow-x: hidden;
+/* ─── Main chat panel ─────────────────────────────────────────── */
+.mainContainer {
+  position: absolute;
+  width: calc(100vw - 540px - var(--stage-offset) * 2);
+  height: calc(100% - 170px);
+  right: calc(16px + var(--stage-offset));
+  top: 136px;
+  padding: 1rem 1.25rem;
+  background: $surface; 
+  border-radius: $r-lg;
 }
 
-#selectGenderPrefrence {
-  color: $blue-sub;
-  font-size: 1.5rem;
-  cursor: pointer;
-  background: none;
-  border: none;
-  outline: none
+/* ─── Video tiles ─────────────────────────────────────────────── */
+.videoContainer {
+  width: min(500px, 44vw);
+  max-width: 44vw !important;
+  position: absolute;
+  z-index: 99;
+  background-color: $dark;
+  /* 4:3 aspect ratio derived from width */
+  height: calc(min(500px, 44vw) * 0.75);
+  max-height: calc(50vh - 64px);
+  top: 80px;
+  margin-left: calc(16px + var(--stage-offset));
+  border-radius: $r-lg;
+  overflow: clip;
 }
 
-#genderPrefrenceCont {
-  position: relative
+.partnerVideoContainer {
+  top: 80px;
 }
 
-#width_tmp_option {
-  font-size: 1.5rem;
-}
-
-.welcomeText {
-  font-size: 2rem;
-  font-weight: 600;
-  margin-top: 200px;
+/* ─── Placeholder shown when no stranger is connected ─────────── */
+.partnerVideoPlaceholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, $dark 0%, $dark-2 100%);
+  color: $text-on-dark;
+  border-radius: inherit;
+  z-index: 2;
+  pointer-events: none;
+  padding: 16px;
   text-align: center;
 }
 
-.primaryButton {
-  border: none;
-  outline: none;
-  cursor: pointer;
+.partnerVideoPlaceholderInner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  max-width: 100%;
+}
+
+.partnerVideoPlaceholderAvatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.partnerVideoPlaceholderTitle {
+  margin: 4px 0 0 0;
   font-size: 1rem;
   font-weight: 600;
-  padding: 10px 30px 10px 30px;
-  border-radius: 0.25rem;
+  letter-spacing: -0.005em;
+  color: $text-on-dark;
 }
 
-.prev-button {
-  position: absolute;
-  bottom: 0;
-  background: blue
+.partnerVideoPlaceholderHint {
+  margin: 0;
+  font-size: 0.82rem;
+  color: rgba(249, 250, 251, 0.6);
 }
 
-.primaryButton:hover,
-.primaryButton:active {
-  box-shadow: $lift-shadow;
-}
-
-.next {
-  display: none;
-  background-color: $secondary-color;
-  transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-    color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.cancel {
-  background-color: $warning-color;
-  transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-    color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.next:hover {
-  background-color: $secondary-color-hover;
-}
-
-.next:active {
-  background-color: $secondary-color-active;
-}
-
-.cancel:hover {
-  background-color: $warning-color-hover;
-}
-
-.cancel:active {
-  background-color: $warning-color-active;
-}
-
-#addFriendCont p {
-  color: black
-}
-
-.handleFriendsRequestButtons {
-  cursor: pointer;
-  font-size: 18px;
-  border: 1px solid black;
-  background: transparent;
-  margin-right: 0.5rem;
-}
-
-.handleFriendsRequestButtonsCont {
-  position: absolute;
-  top: 50px;
-}
-
-.noButton {}
-
-#okfirefoxDialog {
-  font-size: 1.5rem;
-  background-color: $darkPrimaryGreen;
-  color: white
-}
-
-#addFriendCont button {}
-
-.friendStatusText {
-  color: black
-}
-
-.mainContainer {
-  position: absolute;
-  width: calc(100vw - 530px);
-  height: calc(100% - 165px);
-  right: 10px;
-  top: 125px;
-  padding: 1rem;
-  background: #FFFFFF;
-  box-shadow: 0px 0px 10px 10px rgba(204, 204, 204, 0.5);
-  border-radius: 25px;
-}
-
-.addFriendImg {
-  margin-right: auto;
-  cursor: pointer;
-  position: absolute;
-  right: 0;
-}
-
-.videoContainer {
-  width: 425px;
-  max-width: 35vw !important;
-  position: absolute;
-  z-index: 99;
-  background-color: rgba(0, 0, 0, 1);
-  height: calc(50% - 50px);
-  position: absolute;
-  top: 87px;
-  margin-left: 10px;
-  background: #FFFFFF;
-  border-radius: 15px;
+.userVideoContainer {
+  top: calc(min(500px, 44vw) * 0.75 + 96px);
+  overflow: visible; /* allow desktop controls to overflow */
 }
 
 .partnerFullScreen {
@@ -177,132 +131,32 @@ body {
   min-width: 100%;
 }
 
-.userVideoContainer {
-  top: calc(50% + 35px);
-  right: default;
-  z-index: default;
+.userVideoFull {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 240px;
+  height: 180px;
+  border-radius: $r-md;
+  overflow: clip;
+  z-index: 200;
 }
 
 #videoOfUser,
 #partnerVideo {
+  transform: rotateY(180deg);
   object-fit: contain;
 }
 
-.fullNameCont {
-
-  display: flex;
-  flex-direction: row;
-  gap: 1rem;
+#jeeFaceFilterCanvas {
+  border-radius: $r-lg;
 }
 
-.fullNameCont>div {
-  width: 50% !important;
-
-}
-
-.userVideoFull {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  width: 200px;
-  height: 200px;
-  box-shadow: 0px 0px 10px 5px rgba(220, 220, 220, 0.5);
-}
-
-.filterOptions {
-  width: 30vw;
-  display: none
-}
-
-.filter-pagination-button {
-  width: 2rem;
-  height: 8rem;
-  font-size: 3rem;
-  color: white;
-  text-align: center;
-  bottom: 0.5rem;
-  position: absolute;
-
-}
-
-#loadingFilters {
-  color: white;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  position: absolute;
-  z-index: 100;
-  top: 0;
-  padding: 0;
-  margin: 0;
-  border-radius: 15px;
-  background-color: rgba(0, 0, 0, 0.5);
+.video {
   width: 100%;
-  height: 100%
-}
-
-.filter-pagination-button:hover {
-  background-color: rgba(0, 0, 0, 0.9);
-  cursor: pointer;
-}
-
-.filter-coursel-cont {
-  position: absolute !important;
-  left: -200% !important;
-  bottom: 0
-}
-
-.chooseFilter {
-  background: none;
-  border-radius: 50%;
-  max-width: 56px;
-  max-height: 56px;
-}
-
-.cross-icon {
-  cursor: pointer;
+  height: 100%;
+  object-fit: contain;
   position: absolute;
-  bottom: 6rem;
-  left: 27.5vw;
-  height: 3rem;
-  min-width: 3rem
-}
-
-.hidden {
-  left: 0 !important
-}
-
-.filter-image {
-  border-radius: 1rem;
-  cursor: pointer;
-  opacity: 0.8;
-  margin-right: 3rem !important
-}
-
-.filter-image:hover {
-  background-color: #594559;
-  opacity: 1;
-}
-
-.opacity {
-  opacity: 1;
-}
-
-.filterButton {
-  color: white;
-  display: inline-block !important;
-  background-color: #ffc200;
-  font-size: 2rem;
-  padding: 0 1rem 0 1rem
-}
-
-.filterButton:hover {
-  color: white;
-  background-color: #F89C12;
-}
-
-.partnerVideoContainer {
-  top: 70px;
 }
 
 .partnerVideoFull {
@@ -312,506 +166,805 @@ body {
   min-width: 100% !important;
   top: 0;
   left: 0;
-  position: absolute
-}
-
-.video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
   position: absolute;
-  box-shadow: 0px 0px 20px 15px rgba(220, 220, 220, 0.5);
-  border-radius: 15px;
-
+  border-radius: 0;
 }
 
-.userVideo {
-  box-shadow: 0px 0px 20px 15px rgba(220, 220, 220, 0.5);
+/* ─── Desktop controls (inside user video) ─────────────────────── */
+.desktop-ctrl-wrapper {
+  position: absolute;
+  bottom: 14px;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  z-index: 999;
+  pointer-events: none;
 
+  > * { pointer-events: auto; }
+}
+
+.desktop-ctrl-wrapper.controlsFull {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  right: auto;
+}
+
+/* ─── Mobile controls ─────────────────────────────────────────── */
+.controlsContainer {
+  position: absolute;
+  bottom: 14px;
+  align-items: center;
+  justify-content: space-around;
+  height: auto;
+  z-index: 999;
+  width: min(500px, 44vw);
+  display: flex;
+}
+
+.ctrl-bar-wrapper {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  z-index: 999;
+}
+
+.controlsContainer.ctrl-bar-wrapper {
+  top: unset;
+  height: auto;
+  width: auto;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.controlsFull { width: 100%; }
+
+/* ─── Filter carousel positioning ─────────────────────────────── */ 
+.filter-carousel-wrapper {
+  position: absolute;
+  bottom: 84px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  min-width: 320px;
+}
+
+.desktop-ctrl-wrapper .filter-carousel {
+    position: absolute;
+    bottom: 0;
+    z-index: 1000;
+  min-width: min(440px, 96%);
+  max-width: 96%;
+}
+
+/* ─── Top right action buttons (Stop / Next) ──────────────────── */
+.buttonsCont {
+  display: flex;
+  gap: 10px;
+  position: absolute;
+  left: calc(min(500px, 44vw) + 28px + var(--stage-offset));
+  top: 90px;
+  z-index: 100;
+}
+
+.button {
+  color: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.98rem;
+  letter-spacing: -0.005em;
+  outline: none;
+  border: none;
+  border-radius: 14px;
+  padding: 10px 22px;
+  background: $primary;
+  transition: background 0.15s ease, transform 0.08s ease;
+
+  &:hover { background: $primary-hover; }
+  &:active { transform: scale(0.97); }
+}
+
+#stopButton {
+  background: $danger;
+  &:hover { background: $danger-hover; }
+}
+
+/* ─── Start button (hero CTA) ─────────────────────────────────── */
+.StartButton {
+  font-family: inherit !important;
+  font-weight: 700 !important;
+  font-size: 0.98rem !important;
+  letter-spacing: -0.01em !important;
+  padding: 12px 32px !important;
+  border-radius: $r-pill !important;
+  background: $primary !important;
+  border: none !important;
+  color: #fff !important;
+  cursor: pointer !important;
+  transition: background 0.15s, transform 0.1s !important;
+  margin-top: 1.5rem !important;
+
+  &:hover {
+    background: $primary-hover !important;
+  }
+  &:active { transform: scale(0.97) !important; }
+}
+
+/* ─── Primary button (generic) ────────────────────────────────── */
+.primaryButton {
+  border: none;
+  outline: none;
+  cursor: pointer;
+  font-size: 0.92rem;
+  font-weight: 600;
+  padding: 9px 20px;
+  border-radius: $r-pill;
+  transition: background 0.15s, box-shadow 0.15s;
+
+  &:hover, &:active { box-shadow: $shadow; }
+}
+
+.next   { display: none; background-color: $primary; color: #fff; transition: background 0.15s; }
+.cancel { background-color: $danger; color: #fff; transition: background 0.15s; }
+.next:hover  { background-color: $primary-hover; }
+.cancel:hover { background-color: $danger-hover; }
+
+/* ─── Icon container (legacy, faded) ──────────────────────────── */
+.iconContainer {
+  padding: 10px;
+  border-radius: 50%;
+  background: transparent;
+  width: 1.8rem;
+  height: 1.8rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover { background: $surface-3; }
+  svg { width: 100%; height: auto; }
+}
+
+.iconBasic       { color: $primary; }
+.iconAlternative { color: $danger; }
+
+/* ─── Chat input ──────────────────────────────────────────────── */
+.inputContainer {
+  width: 100%;
+  z-index: 2;
+  height: 72px;
+  bottom: 0;
+  position: absolute;
+  left: 0;
+}
+
+.whitebgInput {
+  background: $surface;
+  width: 100%;
+  height: 72px;
+  bottom: 0;
+  position: absolute;
+  right: 0;
+  border-radius: 0 0 $r-lg $r-lg; 
 }
 
 .whitebgInputMobile {
-  background: white;
+  background: $surface;
   width: 100%;
   height: 100px;
-  bottom: 0px;
+  bottom: 0;
   position: absolute;
   right: 0;
   border-radius: 0;
   z-index: 1;
 }
 
+.chatInput {
+  position: absolute;
+  width: calc(100% - 92px);
+  height: 46px;
+  left: 14px;
+  bottom: 13px;
+  border-radius: $r-pill !important;
+  padding: 0 22px 0 22px !important;
+  font-size: 0.95rem !important;
+  font-family: inherit !important;
+  background: $surface-3 !important;
+  border: 1px solid transparent !important;
+  outline: none !important;
+  color: $text;
+  transition: background 0.15s, border-color 0.15s !important;
 
-.whitebgInput {
-  background: white;
-  width: 100%;
-  height: 70px;
-  bottom: 0px;
+  &::placeholder { color: $text-muted; }
+  &:focus {
+    background: $surface !important;
+    border-color: $primary !important;
+  }
+}
+
+.chatButton {
+  position: absolute;
+  right: 14px;
+  bottom: 13px;
+  border: none;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  padding: 0;
+  cursor: pointer;
+  outline: none;
+  color: #fff;
+  background: $primary;
+  transition: background 0.15s, transform 0.1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover { background: $primary-hover; }
+  &:active { transform: scale(0.94); }
+
+  svg path { fill: #fff !important; }
+}
+
+.emojiSvg {
+  position: absolute;
+  bottom: 26px;
+  cursor: pointer;
+  left: 1.5rem;
+  opacity: 0.6;
+  transition: opacity 0.15s;
+
+  &:hover { opacity: 1; }
+}
+
+.attachmentButton {
+  position: absolute;
+  right: 70px;
+  z-index: 3;
+  margin-top: 18px;
+  font-size: 1.45rem;
+  color: $primary;
+  cursor: pointer;
+}
+
+/* ─── Online indicator ────────────────────────────────────────── */
+.onlineText {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: $text;
+  letter-spacing: -0.005em;
+}
+
+/* ─── Alert / status text ─────────────────────────────────────── */
+.alertText {
+  font-size: 1.05rem !important;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  color: $text-muted !important;
+}
+
+/* ─── Searching state (with game switcher) ─────────────────────── */
+.searchingCont {
+  margin-top: 56px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.searchingText {
+  margin: 0 !important;
+}
+
+.searchingGameSwitch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px 6px 10px;
+  background: $surface-2;
+  border: 1px solid $border;
+  border-radius: $r-pill;
+}
+
+.searchingGameSwitchLabel {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: $text-muted;
+}
+
+.searchingGameSelect {
+  font-family: inherit;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: $text;
+  background: transparent;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 2px 18px 2px 4px;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6' fill='none'><path d='M1 1L5 5L9 1' stroke='%236B7280' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 2px center;
+}
+
+/* "Connected!" indicator — needs clearance below the stop/next buttons.
+   buttonsCont sits at top: 90px; we need at least 16px breathing room. */
+.connectedBadge {
+    display: none !important;
+  margin-top: 56px !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: $r-pill;
+  background: $success-soft;
+  color: $success !important;
+  font-size: 0.92rem !important;
+
+  &::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: $success;
+    box-shadow: 0 0 6px $success;
+  }
+}
+
+/* ─── Welcome / hero text ─────────────────────────────────────── */
+.welcomeText {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-top: 200px;
+  text-align: center;
+  color: $text;
+  letter-spacing: -0.015em;
+}
+
+.enjoyInstant {
+  font-size: 2.6rem !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.025em !important;
+  color: $text;
+  margin: 0.5rem 0 1rem 0;
+  line-height: 1.15;
+}
+
+/* ─── Add friend ──────────────────────────────────────────────── */
+.addFriendBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.96);
+  color: $primary;
+  cursor: pointer;
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  transition: background 0.15s, transform 0.1s;
+
+  &:hover { background: $primary; color: #fff; transform: scale(1.08); }
+}
+
+.addFriendmainCont {
   position: absolute;
   right: 0;
-  border-radius: 25px;
+  top: 0;
+  z-index: 1000000;
 }
 
-.partnerVideo {
-  box-shadow: 0px 0px 20px 15px rgba(220, 220, 220, 0.5);
+/* ─── Friend request dialog ───────────────────────────────────── */
+.reciveRequest {
+  background: $surface;
+  border-radius: $r-md;
+  padding: 16px 20px;
+  border: 1px solid $border;
 
+  p { font-weight: 600; color: $text; margin: 0 0 36px 0; }
 }
 
-#stopButton {
-  background-color: rgb(200, 0, 0);
-}
-
-.buttonsCont {
-  margin-right: 2rem;
-  display: block;
-  right: calc(100vw - 728px);
+.handleFriendsRequestButtonsCont {
   position: absolute;
-  top: 70px;
-  border-radius: 20px;
-  z-index: 100;
-  font-weight: 700;
-}
-
-.button {
-  color: white;
-  margin-right: 1.25rem;
-  cursor: pointer;
-  font-family: 'Lato';
-  font-style: normal;
-  font-size: 20px;
-  outline: none;
-  border: none;
-  border-radius: 20px;
-  line-height: 100%;
-  line-height: 100%;
-  font-family: 'Lato';
-  font-style: normal;
-  padding: 0.7rem 1.5rem;
-  background: #00cc00;
-  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25), 0px 4px 4px rgba(0, 0, 0, 0.25), 0px 2px 4px rgba(136, 144, 194, 0.2), 0px 5px 15px rgba(37, 44, 97, 0.15);
-
-}
-
-.controlsContainer {
-  position: absolute;
-  top: calc(100% - 100px);
-  align-items: center;
-  justify-content: space-around;
-  height: 100px;
-  z-index: 999;
-  width: min(425px, 35vw);
+  top: 50px;
   display: flex;
+  gap: 8px;
 }
 
-.controlsFull {
-  width: 100%;
-}
-
-.iconContainer {
-  padding: 12px;
-  border-radius: 50%;
-  background: #E8F1F5;
-  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-  width: 2rem;
-  height: 2rem;
+.handleFriendsRequestButtons {
+  border-radius: $r-pill !important;
+  padding: 7px 18px !important;
+  font-weight: 600 !important;
+  font-size: 0.85rem !important;
   cursor: pointer;
-  transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: inherit;
+  transition: background 0.15s, border-color 0.15s !important;
+
+  &:not(.noButton) {
+    background: $primary !important;
+    color: #fff !important;
+    border: none !important;
+
+    &:hover { background: $primary-hover !important; }
+  }
+
+  &.noButton {
+    background: transparent !important;
+    color: $text !important;
+    border: 1px solid $border !important;
+
+    &:hover { background: $surface-3 !important; }
+  }
 }
+
+/* ─── Selects / form ──────────────────────────────────────────── */
+#selectGenderPrefrence {
+  color: $primary;
+  font-size: 1.2rem;
+  cursor: pointer;
+  background: none;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  font-weight: 500;
+}
+
+#genderPrefrenceCont { position: relative; }
+#width_tmp_option    { font-size: 1.2rem; }
+
+.selectGender, .goog-te-combo {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $r-sm;
+  color: $text;
+  display: block;
+  font-family: inherit;
+  font-size: 1.4rem;
+  font-weight: 500;
+  padding: 8px 1.5rem;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+
+  &:focus { 
+    border-color: $primary;
+    background: $surface-2;
+  }
+}
+
+.genderOptions { color: $text-muted; }
 
 #selectCountry {
+  border: none;
+  background: none;
   font-size: 1.1rem;
+  outline: none;
+  color: $primary;
+  font-family: inherit;
+  font-weight: 500;
+
+  &::placeholder { color: $primary; }
 }
 
-.iconContainer:hover {
-  background-color: #efefef;
-}
-
-.openerForCont {
-  display: none
-}
-
-#partner-filter-options {
-  left: 35vw;
-  position: absolute;
-  z-index: 10000;
-  font-size: 2rem;
-  bottom: 80px;
+/* ─── Quick settings pane ─────────────────────────────────────── */
+.gender-cont > h3 {
+  font-size: 1rem;
+  display: block;
+  color: $text;
+  font-weight: 600;
+  letter-spacing: -0.005em;
 }
 
 .gender-contFullSize {
   display: none;
   left: 0;
   bottom: 105px !important;
-  font-size: 1.2rem;
-  position: absolute
-}
-
-.gender-cont>h3 {
-  font-size: 1.3rem;
-  display: block;
-  color: #F89C12
-}
-
-.radioDarkMode {
-  background: none;
-  border: 2px solid block;
-  height: 60px;
-  width: 60px;
-  display: flex;
-  margin-top: 1rem;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  cursor: pointer;
-}
-
-.selectGender,
-.goog-te-combo {
-  margin-bottom: 10px;
-  background: transparent;
-  border: 1px solid #474559;
-  background: #fff;
-  font-size: 1.25rem;
-  max-width: min-content;
-  outline: none;
-  border: none;
-  background: transparent;
-  border: 1px solid #bcd4e2;
-  border-radius: 3px;
-  color: #aebbc4;
-  display: block;
-  font-weight: 100;
-  letter-spacing: 0.04em;
-  position: relative;
-  text-align: left;
-  z-index: 10;
-  transition: all 0.7s ease;
-  color: $blue-sub;
-  cursor: pointer;
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 400;
-  font-size: 2rem;
-  padding: 0 2.5rem 0 2.5rem;
-  line-height: 29px;
-  display: flex;
-  align-items: center;
-  letter-spacing: 1.08px;
-  background: #FFFFFF;
-  border: 1px solid #BCD4E2;
-  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25), 0px 0px 8.1px rgba(5, 28, 54, 0.15);
-  border-radius: 3px;
-}
-
-.EmojiPickerCont .epr-preview {
-  display: none
-}
-
-.closechatFiltersCont {
-  display: none;
-}
-
-.enjoyInstant {
-  font-family: 'Poppins';
-  font-style: normal;
-  font-weight: 500;
-  font-size: 3rem;
-  padding: 0;
-  margin: 0.6rem 0 0.9rem 0;
-  color: $blue-sub;
-
-  text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-}
-
-.AgreeTextOnTerms {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 400;
-  font-size: 18px;
-  line-height: 22px;
-  width: 400px;
-  display: inline-block;
-  color: $blue-sub;
-}
-
-.checkBox {
-  size: 2rem;
-  cursor: pointer;
-  height: 2rem;
-  margin-right: 6px;
-  background: #444444;
-  border: 1px solid #000000;
-  width: 2rem
-}
-
-.StartButton {
-  padding: 0.5rem 5rem;
-  background: $darkPrimaryGreen;
-  box-shadow: 0px 1px 2px rgba(20, 14, 62, 0.25), inset 0px 0px 0px 1px #4834D4, inset 0px 1px 1px 1px rgba(255, 255, 255, 0.25), inset 0px -1px 1px 1px rgba(52, 35, 170, 0.25);
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
-  outline: none;
-  filter: drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.25)) drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.25)) drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.25)) drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.25));
-  background: $darkPrimaryGreen;
-  box-shadow: 0px 1px 2px rgba(20, 14, 62, 0.25), inset 0px 0px 0px 1px #4834D4, inset 0px 1px 1px 1px rgba(255, 255, 255, 0.25), inset 0px -1px 1px 1px rgba(52, 35, 170, 0.25);
-  border-radius: 10px;
-  font-family: 'Lato';
-  font-style: normal;
-  font-weight: 700;
-  font-size: 2.3rem;
-  line-height: 100%;
-  margin-top: 1rem;
-  /* identical to box height, or 48px */
-
-
-  color: #FFFFFF;
-}
-
-#disabledOption {
-  color: #474559
-}
-
-.genderOptions {
-  color: #aebbc4;
-}
-
-#filter-button {
-  padding: 0;
-  border: 0;
-  background-color: none;
-}
-
-.filter-button:hover {
-  background-color: none;
-}
-
-#filter-button-icon {
-
-
-  padding: 12px;
-  border-radius: 50%;
-  background: #E8F1F5;
-  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-  width: 56px !important;
-  height: 56px !important;
-  cursor: pointer;
-  transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-
-
-}
-
-.iconContainer svg {
-  width: 100%;
-  height: auto;
-}
-
-.iconBasic {
-  color: $blue-sub;
-}
-
-.onlineText {
-  margin-right: 2rem;
-  right: calc(100vw - 663px);
+  font-size: 1.1rem;
   position: absolute;
-  font-family: 'Lato';
-  font-style: normal;
-  font-weight: 700;
-  font-size: 30px;
-  line-height: 100%;
-  /* or 36px */
-
-  top: 75px;
-  color: #094166;
-}
-
-#selectCountry {
-  border: none;
-  background: none;
-  font-size: 1.5rem;
-  outline: none;
-  border: none;
-  color: $darkPrimaryGreen
-}
-
-#selectCountry:active {
-  outline: none;
-  border: none
-}
-
-#selectCountry::placeholder {
-  color: $darkPrimaryGreen
-}
-
-.closechatFiltersCont {
-  position: absolute;
-  top: -5px;
-  z-index: 10000000000000000;
-  background: none;
-  border: none;
-  font-size: 2rem;
-  cursor: pointer;
-  right: 3px;
-  color: #999
-}
-
-.closechatFiltersCont:hover {
-  color: red
-}
-
-.quickSettings {
-  display: block;
-  color: black
 }
 
 .chatFiltersCont {
-  top: 53px;
-  padding: 0 1rem 0 1rem;
-  right: 10px;
+  top: 56px;
+  padding: 0 1rem;
+  right: calc(10px + var(--stage-offset));
   position: absolute;
   z-index: 90000000;
 }
 
-.chatFiltersCont * {
-  display: inline-block
+.chatFiltersLabel {
+  display: block;
+  margin: 0 0 6px 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: $text-muted;
 }
 
-.iconAlternative {
-  color: $warning-color;
+.filtersRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $r-pill;
+  box-shadow: $shadow-sm;
 }
 
-.descriptionCont {
-  font-size: 2rem;
+.filtersRow .filtersRowItem {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.filtersRow .desktopDarkModeControls {
   padding: 4px;
-  color: black;
-  position: absolute;
-  top: 100vh
-}
-
-.descriptionCont h2,
-.descriptionCont h3 {
-  font-size: 48px;
-  color: $darkPrimaryGreen;
-  margin: 4px 0 4px 0;
-  line-height: 110%;
-}
-
-.descriptionCont p {
-  font-size: 2rem;
-  color: #111616
-}
-
-.inputContainer {
-  width: 100%;
-  z-index: 2;
-  height: 70px;
-  bottom: 0;
-  width: 100%;
-  z-index: 2;
-  height: 70px;
-  position: absolute;
-  left: 0;
-}
-
-.alertText {
-  font-size: 1.5rem;
-  color: black
-}
-
-.emojiSvg {
-  position: absolute;
-  bottom: 31px;
-  cursor: pointer;
-  left: 2rem;
-}
-
-.chatInput {
-  width: calc(100% - 220px);
-  border-radius: 9999px;
-  padding: 13px 80px 12px 3rem;
-  font-size: 1rem;
-  outline: none;
-  height: 100%;
-  background-color: #F6F7FB;
-  color: #000000;
-  box-sizing: border-box;
-
-  position: absolute;
-  width: 83%;
-  height: 60px;
-  left: 15px;
-  bottom: 1rem;
-
-  background: #E8F1F5;
-  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25), 0px 4px 4px rgba(0, 0, 0, 0.25);
-  border-radius: 9999px;
-}
-
-.chatInput::placeholder {
-  color: #6F8094;
-}
-
-.attachmentButton {
-  position: absolute;
-  right: 140px;
-  z-index: 3;
-  margin-top: 18px;
-  font-size: 2rem;
-  color: $primary-color;
-  cursor: pointer;
-}
-
-.chatButton {
-  position: absolute;
-  right: 10px;
-  bottom: 1rem;
-  border: none;
-  width: 60px;
-  height: 60px;
   border-radius: 50%;
-  padding: 17px 0 16px 0;
-  cursor: pointer;
-  outline: none;
-  color: #f2f2f1;
-  font-size: 2rem;
-  background: $blue-sub;
-  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25), 0px 4px 4px rgba(0, 0, 0, 0.25);
+  transition: background 0.15s;
+
+  &:hover { background: $surface-3; }
+
+  svg { display: block; }
 }
 
+.filtersDivider {
+  display: inline-block;
+  width: 1px;
+  height: 22px;
+  background: $border;
+  flex-shrink: 0;
+}
+
+.filtersRow .filtersDropdownGroup {
+  display: inline-flex;
+  align-items: center;
+}
+
+.filtersRow .filtersDropdownInner {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px 4px 8px;
+  border-radius: $r-pill;
+  transition: background 0.15s;
+
+  &:hover { background: $surface-3; }
+}
+
+.filtersRow .filtersPeopleIcon { display: block; }
+
+.filtersRow #selectGenderPrefrence {
+  font-size: 0.92rem;
+  line-height: 1;
+  padding: 4px 20px 4px 4px;
+  /* Custom chevron via background-image so the dropdown matches the dark/light themes */
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6' fill='none'><path d='M1 1L5 5L9 1' stroke='%236B7280' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 4px center;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.filtersRow .mobileDarkModeContrals { display: none; }
+.filtersRow #searchingPartner { display: none; }
+
+.quickSettings {
+  display: block;
+  color: $text;
+  font-weight: 600;
+}
+
+.closechatFiltersCont {
+  display: none;
+  position: absolute;
+  top: -5px;
+  z-index: 100000000;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  right: 3px;
+  color: $text-muted;
+
+  &:hover { color: $danger; }
+}
+
+/* ─── Filter UI (legacy overlay) ──────────────────────────────── */
+.filterOptions { width: 30vw; display: none; }
+
+.filter-coursel-cont {
+  position: absolute !important;
+  left: -200% !important;
+  bottom: 0;
+}
+
+.chooseFilter {
+  background: none;
+  border-radius: 50%;
+  max-width: 56px;
+  max-height: 56px;
+}
+
+.hidden { left: 0 !important; }
+
+.filter-image {
+  border-radius: $r;
+  cursor: pointer;
+  opacity: 0.85;
+  margin-right: 2rem !important;
+  transition: opacity 0.15s;
+
+  &:hover { opacity: 1; }
+}
+
+.opacity { opacity: 1; }
+
+/* ─── Message badge ──────────────────────────────────────────── */
+.numberOfMessages {
+  border-radius: 50%;
+  height: 1.3rem;
+  width: 1.3rem;
+  background: $danger;
+  color: #fff;
+  position: absolute;
+  top: 0;
+  left: 35px;
+  display: flex;
+  align-items: center;
+  z-index: 2147483647;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border: 2px solid $surface;
+}
+
+/* ─── Terms / links ──────────────────────────────────────────── */
+.linksforterms { color: $text-faint !important; }
+
+.AgreeTextOnTerms {
+  font-family: inherit;
+  font-size: 0.95rem;
+  width: 400px;
+  display: inline-block;
+  color: $text-muted;
+  line-height: 1.5;
+}
+
+.checkBox {
+  cursor: pointer;
+  height: 1.4rem;
+  width: 1.4rem;
+  margin-right: 8px;
+  accent-color: $primary;
+}
+
+/* ─── Game full-screen container (mobile) ─────────────────────── */
 .fixedGameCont {
-  height: calc(100vh) !important;
+  height: 100vh !important;
   overflow: auto;
   display: flex;
   flex-direction: column;
-  padding: 1rem 1rem 1rem 2rem;
   width: calc(100vw - 2rem);
   top: 0;
-  overflow: auto;
   z-index: 1000;
   position: absolute;
   padding: 54px 1rem 20px 1rem !important;
-  background-color: #ffffff;
+  background-color: $dark;
 }
 
 .fixedGameContChess {
   display: flex;
   justify-content: center;
-  justify-content: center;
   align-items: center;
 }
 
-.fixedGameContChess>div {
-  width: 75% !important
+.fixedGameContChess > div {
+  width: auto !important;
+  max-width: 96%;
 }
 
-.linksforterms {
-  color: #ccc !important;
+/* ─── Misc ───────────────────────────────────────────────────── */
+.openerForCont { display: none; }
+
+#partner-filter-options {
+  left: 44vw;
+  position: absolute;
+  z-index: 10000;
+  font-size: 1.4rem;
+  bottom: 80px;
 }
 
-@media screen and (max-width: 860px) {
-  .font26Mobile {
-    font-size: 26px !important;
+.radioDarkMode {
+  background: $surface-3;
+  border: 1px solid $border;
+  height: 56px;
+  width: 56px;
+  display: flex;
+  margin-top: 1rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+
+  &:hover { border-color: $primary; background: $surface; }
+}
+
+.fullNameCont {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+}
+
+.fullNameCont > div { width: 50% !important; }
+
+#okfirefoxDialog {
+  font-size: 1rem;
+  background-color: $primary;
+  color: #fff;
+  border: none;
+  border-radius: $r-sm;
+  padding: 9px 22px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.15s;
+  font-family: inherit;
+  box-shadow: none;
+
+  &:hover { background-color: $primary-hover; }
+}
+
+#disabledOption    { color: $text-faint; }
+.friendStatusText  { color: $text; }
+
+.smaller {
+  width: 1.4rem !important;
+  height: 1.4rem !important;
+  border-radius: 50%;
+}
+
+/* ─── Responsive: 1260px ─────────────────────────────────────── */
+@media screen and (max-width: 1260px) {
+  .mainContainer { width: calc(100vw - 47vw); }
+}
+
+@media screen and (max-width: 1120px) {
+  .iconContainer {
+    padding: 8px;
+    width: 1.4rem;
+    height: 1.4rem;
   }
+  .chooseFilter {
+    max-width: 46px;
+    max-height: 46px;
+  }
+}
+
+/* ─── Responsive: 860px ──────────────────────────────────────── */
+@media screen and (max-width: 860px) {
+  .desktopHidden { display: none !important; }
+  .font26Mobile  { font-size: 24px !important; }
 
   .flexCenterMobile {
     display: flex;
@@ -819,163 +972,16 @@ body {
     align-items: center;
   }
 
-  .darkModeNav {
-    position: fixed;
-    top: 0;
-    z-index: 10000000000 !important;
-    display: block !important;
-    cursor: pointer;
-    width: 40px;
-    top: 5px;
-    right: 90px !important;
-  }
-
-  #loadingFilters {
-    font-size: 1.25rem
-  }
-
-  @media screen and (max-height:525px) {
-    .controlsContainer {}
-
-    .selectGender {
-      font-size: 1rem !important;
-    }
-
-    #selectCountry {
-      font-size: 1rem !important;
-    }
-
-    #gender-cont {}
-  }
-}
-
-@media screen and (max-width: 1200px) {
-  .cross-icon {}
-}
-
-.smaller {
-  width: 1.5rem !important;
-  height: 1.5rem !important;
-  border-radius: 50%;
-  border-width: 2px;
-}
-
-@media screen and (max-width: 1120px) {
-  .iconContainer {
-    padding: 10px;
-    border-radius: 50%;
-    border-width: 2px;
-    width: 1.5rem;
-    height: 1.5rem;
-  }
-
-  .chooseFilter {
-    max-width: 48px;
-    max-height: 48px;
-    border-radius: 50%;
-  }
-
-  #filter-button-icon {
-    padding: 10px;
-    background: #E8F1F5;
-    border-radius: 50%;
-    border-width: 2px;
-    width: 48px !important;
-    height: 48px !important;
-    margin-bottom: 4px;
-    transform: scale(0.9)
-  }
-}
-
-@media screen and (max-width: 420px) {
-  .filter-pagination-button {
-    width: 1rem;
-    height: 6rem;
-    font-size: 1rem
-  }
-
-  .sigininpop {
-    right: 4px !important;
-  }
-
-  .scaler {
-    transform: scale(0.8);
-  }
-
-  .cross-icon {}
-}
-
-.numberOfMessages {
-  border-radius: 50%;
-  height: 1.5rem;
-  width: 1.5rem;
-  background: red;
-  color: white;
-  position: absolute;
-  top: 0px;
-  left: 35px;
-  display: flex;
-  align-items: center;
-  z-index: 2147483647;
-  justify-content: center;
-}
-
-@media screen and (max-width: 361px) {
-  body {
-    overflow-x: auto;
-  }
-}
-
-#selectCountry::-webkit-calendar-picker-indicator {
-  display: flex
-}
-
-@media screen and (min-width: 860px) {
-
-  html {
-    max-height: 100vh
-  }
-}
-
-#button {
-  position: absolute;
-  right: 0
-}
-
-@media screen and (max-width: 1260px) {
-  .mainContainer {
-    width: calc(100vw - 45vw);
-  }
-}
-
-.sigininpop {
-  display: none
-}
-
-@media screen and (max-width: 860px) {
   .fullNameCont {
-    gap: 0
-  }
-
-  .w88Mobile {
-    width: 88%
-  }
-
-  .fullNameCont {
-
-    display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.75rem;
   }
 
-  .fullNameCont>div {
-    width: 100% !important;
-
-  }
+  .fullNameCont > div { width: 100% !important; }
 
   .reciveRequest {
     top: 80px;
-    font-size: 18px;
+    font-size: 16px;
     position: absolute;
     left: 10px;
   }
@@ -985,66 +991,33 @@ body {
     width: 40px;
     top: 60px;
     left: 0;
-    z-index: 1000000
+    z-index: 1000000;
   }
 
-  .partnerVideo {
-    box-shadow: unset
-  }
-
-  .sigininpop {
-    display: block
-  }
-
-  .chatFiltersCont {
-    top: 0
-  }
-
-  .mobileDarkModeContrals {
-    display: block;
-  }
-
-  .openerForCont {
-    position: absolute;
-    cursor: pointer;
-    top: 10px;
-    z-index: 1000000000;
-    right: 4rem;
-    background: none;
-    border: none;
-
-  }
-
-  .enjoyInstant {
-    font-size: 2rem;
-    text-align: center
-  }
-
-  .mainGoogleTranslate {
-    display: none;
-  }
-
-  .closechatFiltersCont {
-    display: block
-  }
+  .sigininpop { display: block; }
+  .chatFiltersCont { top: 0; }
+  .closechatFiltersCont { display: block; }
+  .mainGoogleTranslate { display: none; }
 
   .mainContainer {
     width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: unset;
+    box-shadow: none;
+    border: none;
     top: 0;
     padding: 5px;
     border-radius: 0;
     height: 100vh;
-    right: 0
+    right: 0;
+    background-color: $bg;
   }
 
   #selectGender {
-    font-size: 1.6rem;
-    border-radius: 10px;
-    padding: .3rem 2rem .3rem 2rem;
+    font-size: 1.3rem;
+    border-radius: $r-sm;
+    padding: 0.4rem 1.25rem;
   }
 
   .startAndSelectGenderCont {
@@ -1054,51 +1027,52 @@ body {
     justify-content: center;
   }
 
-  html {
-    font-size: 16px;
-  }
+  html { font-size: 16px; }
 
   .filter-coursel-cont {
     max-width: 97vw;
-
-    min-width: 97vw
+    min-width: 97vw;
   }
-
-
 
   .videoContainer {
     width: 100%;
+    max-width: 100% !important;
     z-index: 99;
-    height: 57%;
-  }
-
-  .videoContainer {
-    width: 100%;
     height: 50%;
+    border-radius: 0;
+    overflow: hidden;
+    margin-left: 0;
+    border: none;
+    box-shadow: none;
+    max-height: none;
   }
 
   .userVideoContainer {
     top: 1%;
     right: 1%;
-    width: 80px;
-    height: 80px;
+    width: 100px;
+    height: 100px;
+    left: auto;
+    margin-left: 0;
+    border-radius: $r;
     z-index: 100;
+    overflow: clip;
   }
 
   .userVideoFull {
-    width: 100px;
-    height: 100px;
+    width: 110px;
+    height: 110px;
   }
 
-  .partnerVideoContainer {}
-
-  .partnerVideoFull {
-    height: 100%;
+  .partnerVideoContainer {
+    top: 0;
     left: 0;
   }
 
+  .partnerVideo { border: none; }
+
   .controlsContainer {
-    height: 70px;
+    height: 68px;
     z-index: 999;
     width: 100%;
   }
@@ -1109,113 +1083,87 @@ body {
   }
 
   .iconContainer {
-    cursor: none;
-    padding: 10px;
-    border-radius: 50%;
-    border-width: 2px;
-    width: 1.5rem;
-    height: 1.5rem;
+    padding: 9px;
+    width: 1.3rem;
+    height: 1.3rem;
   }
 
-  .mainContainer {
-    background-color: #E8F1F5
-  }
-
-  .welcomeText {
-    margin-top: 60vh;
-  }
-
-  #filter-button-icon {
-    background: #E8F1F5;
-    padding: 10px;
-    border-radius: 50%;
-    border-width: 2px;
-    width: 1rem;
-    height: 1rem;
-  }
+  .welcomeText { margin-top: 60vh; }
 
   .chatInput {
-    width: calc(100% - 116px);
-    padding: 8px 42px 8px 50px;
-    font-size: 1rem;
+    width: calc(100% - 72px) !important;
+    padding: 0 18px 0 44px !important;
+    font-size: 0.95rem !important;
+    height: 42px !important;
+    bottom: 0.5rem !important;
   }
 
-  .inputContainer {
-    height: 40px;
-  }
+  .inputContainer { height: 56px; }
 
   .attachmentButton {
-    right: 70px;
-    margin-top: 8px;
-    font-size: 1.5rem;
+    right: 56px;
+    margin-top: 11px;
+    font-size: 1.4rem;
   }
 
   .chatButton {
-    width: 60px;
-    padding: 11px 0 11px 0;
-    font-size: 1rem;
+    width: 42px;
+    height: 42px;
+    bottom: 0.5rem;
   }
 
-  .openerForCont {}
+  .selectGender { font-size: 1.15rem; margin-bottom: 5px; }
 
-  #compare-sign-rootater:hover {
-    color: #111616;
+  .enjoyInstant {
+    font-size: 1.85rem !important;
+    text-align: center;
   }
 
-  .openerForCont:hover {
-    color: #111616;
+  .openerForCont {
+    position: absolute;
+    cursor: pointer;
+    top: 10px;
+    z-index: 1000000000;
+    right: 3.5rem;
+    background: none;
+    border: none;
+    display: block;
   }
 
   #partner-filter-options {
     left: 0;
-    bottom: 40px;
-    font-size: 1.2rem;
-    position: absolute
+    bottom: 36px;
+    font-size: 1.05rem;
+    position: absolute;
   }
 
-  .selectGender {
-    margin-bottom: 5px;
-    font-size: 1.2rem;
-  }
+  .w88Mobile { width: 88%; }
 }
 
-@media (prefers-color-scheme: dark) {}
-
 @media screen and (max-width: 460px) {
-  #loadingFilters {
-    font-size: 1rem
-  }
-
-  .openerForCont {}
-
   #selectGender {
-    font-size: 1.4rem;
-    border-radius: 10px;
-    padding: 0.3rem 1rem 0.3rem 1rem;
+    font-size: 1.2rem;
+    border-radius: $r-sm;
+    padding: 0.35rem 0.75rem;
   }
-
-  .enjoyInstant {
-    font-size: 1.5rem !important;
-  }
-
-  .descriptionCont h2,
-  .descriptionCont h3 {
-    font-size: 1.2rem !important;
-  }
+  .enjoyInstant { font-size: 1.5rem !important; }
+  .StartButton  { font-size: 1rem !important; padding: 12px 2.5rem !important; }
 
   .controlsContainer {
     max-width: unset !important;
     min-width: 100% !important;
   }
+}
 
-  .descriptionCont p {
-    font-size: 0.8rem !important;
-  }
+@media screen and (max-width: 420px) {
+  .sigininpop { right: 4px !important; }
+  .scaler { transform: scale(0.8); }
+}
 
-  .AgreeTextOnTerms {}
+@media screen and (max-width: 361px) {
+  body { overflow-x: auto; }
+}
 
-  .StartButton {
-    font-size: 1.8rem;
-    padding: 0.6rem 5rem;
-  }
+@media screen and (min-width: 860px) {
+  html { max-height: 100vh; }
 }

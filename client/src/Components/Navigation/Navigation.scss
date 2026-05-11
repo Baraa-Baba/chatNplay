@@ -37,7 +37,9 @@
   display: flex;
   position: relative;
   z-index: 99;
-  background-color: transparent;
+  background-color: #ffffff;
+  border-bottom: 1px solid #DBEAFE;
+  box-shadow: 0 1px 8px rgba(30, 64, 175, 0.07);
 }
 
 .headerLogo {
@@ -53,10 +55,51 @@
   font-family: 'IM Fell Great Primer', serif;
   text-transform: uppercase;
   margin-left: 0;
-  font-weight: 500;
-  font-size: 1.5rem;
-  color: $darkPrimaryGreen;
-  padding: 1rem
+  font-weight: 700;
+  font-size: 1.6rem;
+  color: #16A34A;
+  padding: 1rem;
+  letter-spacing: 0.04em;
+}
+
+.nav-online {
+  position: absolute;
+  left: 60px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 1.65rem;
+  font-weight: 600;
+  color: #1E40AF;
+  white-space: nowrap;
+  top: -40px;
+}
+
+.nav-online-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #16A34A;
+  box-shadow: 0 0 6px #16A34A;
+  flex-shrink: 0;
+}
+
+.nav-icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba(0, 86, 145, 0.08);
+  }
 }
 
 .theonlineText {
@@ -92,89 +135,83 @@
 }
 
 .signUp {
-  /* Button */
-
-
-  /* Auto layout */
-
   display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  padding: 10px 1rem;
+  padding: 10px 1.2rem;
   border: 0;
-  gap: 12px;
+  gap: 10px;
   z-index: 1;
   position: absolute;
   right: 0;
-  top: 0px;
+  top: 0;
   cursor: pointer;
-  background: $darkPrimaryGreen;
-  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25), 0px 4px 4px rgba(0, 0, 0, 0.25), 0px 2px 4px rgba(136, 144, 194, 0.2), 0px 5px 15px rgba(37, 44, 97, 0.15);
-  border-radius: 999px;
-  font-family: 'Montserrat';
-  font-style: normal;
+  background: #16A34A;
+  box-shadow: 0 2px 10px rgba(22, 163, 74, 0.28);
+  border-radius: 50px;
+  font-family: 'Montserrat', sans-serif;
   font-weight: 600;
-  font-size: 20px;
-  line-height: 100%;
-  margin: 0.7rem 0.4rem;
-  /* identical to box height, or 20px */
-
-
+  font-size: 18px;
+  margin: 0.65rem 0.4rem;
   color: #FFFFFF;
+  transition: background 0.14s;
 
-
-  /* Inside auto layout */
-
-  flex: none;
-  order: 0;
-  flex-grow: 0;
+  &:hover { background: #15803D; }
 }
 
 .logIn {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 400;
-  font-size: 24px;
-  line-height: 29px;
-  margin-bottom: 1rem;
-  color: #094166;
-  padding-bottom: 0.5rem;
-  position: absolute;
-  right: 0;
-  top: 0.9rem
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 500;
+  font-size: 18px;
+  line-height: 1;
+  color: #1E40AF;
 }
 
 .logInCont {
   cursor: pointer;
-  margin-right: 1rem;
   position: absolute;
   right: 120px;
-  top: 0px;
-  padding: 0.2rem;
+  top: 12px;
+  padding: 0;
 }
 
 .logInSubCont {
-  width: 5.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: transparent;
+  border: 1px solid transparent;
+  transition: background 0.15s, border-color 0.15s;
   position: relative;
+
+  &:hover {
+    background: rgba(22, 163, 74, 0.06);
+    border-color: rgba(22, 163, 74, 0.18);
+  }
+}
+
+.logInIcon {
+  flex-shrink: 0;
+  display: block;
 }
 
 .logInSubCont img {
-  margin-right: 0.3rem;
-  position: absolute;
-  padding-top: 0.5rem;
-  left: 10px;
+  margin: 0;
+  position: static;
+  padding: 0;
 }
 
 .dropShadow {}
 
 .myAccountlogInSubCont {
-  width: 8rem
+  /* width is implicit from content + padding now */
 }
 
 .myAccountImg {
-  left: unset !important;
-  right: 6.6rem !important
+  position: static !important;
 }
 
 .mobileOnly {
@@ -226,7 +263,8 @@
   }
 
   .navgation {
-    background: white;
+    background: #ffffff;
+    border-bottom: 1px solid #DBEAFE;
   }
 
   .headerContainer {

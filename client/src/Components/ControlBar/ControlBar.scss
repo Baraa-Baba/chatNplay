@@ -1,0 +1,80 @@
+.ctrl-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: rgba(10, 16, 30, 0.84);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-radius: 50px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+}
+
+.ctrl-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  transition: background 0.16s ease, transform 0.1s ease, box-shadow 0.16s ease;
+  outline: none;
+
+  &:active {
+    transform: scale(0.91);
+  }
+
+  &--on {
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.22);
+    }
+  }
+
+  &--subtle {
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.55);
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.14);
+      color: #fff;
+    }
+  }
+
+  &--danger {
+    background: #EF4444;
+    color: #fff;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.38);
+
+    &:hover {
+      background: #DC2626;
+    }
+  }
+
+  &--filter {
+    background: #6366F1;
+    color: #fff;
+    box-shadow: 0 0 10px rgba(99, 102, 241, 0.4);
+
+    &:hover {
+      background: #4F46E5;
+    }
+  }
+}
+
+.ctrl-filter-dot {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4ADE80;
+  border: 2px solid rgba(10, 16, 30, 0.84);
+}

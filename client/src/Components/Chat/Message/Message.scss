@@ -1,50 +1,47 @@
-
-
 .messageContainer {
   width: 100%;
   display: flex;
 }
 
 .message {
-  font-size: 1.5rem; 
-  padding: 1rem;
-  margin: 6px 8px 0px 8px;
+  padding: 10px 14px;
+  margin: 4px 8px;
   word-wrap: break-word;
-  max-width: 50%;
-  font-family: 'Inter';
-font-style: normal;
-font-weight: 400;
-font-size: 20px;
-line-height: 24px;
-display: flex;
-align-items: center;
-
+  max-width: 72%;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 400;
+  line-height: 1.5;
+  border-radius: 18px;
 }
 
 .yourMessage {
-  background: #23D172;
-  box-shadow: 0px 0px 20px 6px rgba(204, 204, 204, 0.3);
-  border-radius: 20px 0px 20px 20px;
+  background: #2563EB;
+  border-radius: 18px 4px 18px 18px;
   margin-left: auto;
-  color: #ffffff;
-  
+  color: #fff;
+  box-shadow: 0 1px 4px rgba(37, 99, 235, 0.22);
 }
 
 .partnerMessage {
-  background: #E8F1F5;
-box-shadow: 0px 0px 20px 6px rgba(204, 204, 204, 0.3);
-border-radius: 0px 20px 20px 20px;
-  
-  color: #094166;
+  background: #EFF6FF;
+  border-radius: 4px 18px 18px 18px;
+  color: #1E293B;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
 .systemMessage {
-  background-color: rgb(27, 235, 37);
-  border-color: black;
+  background: rgba(37, 99, 235, 0.08);
+  color: #1E40AF;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  margin: 0 auto;
+  padding: 6px 12px;
 }
 
 @media screen and (max-width: 860px) {
   .message {
-    font-size: 1rem;
+    font-size: 0.88rem;
+    max-width: 80%;
   }
 }
