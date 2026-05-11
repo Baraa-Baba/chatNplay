@@ -1343,7 +1343,7 @@ function App() {
           {searchingPartner && !isOnline ? (
             <div className="searchingCont">
               <p className="alertText searchingText">
-                Looking for  {gameLabel(userGame)} partner<span id='wait'></span>
+                Looking for that we did that  {gameLabel(userGame)} partner<span id='wait'></span>
               </p>
               <div className="searchingGameSwitch">
                 <label className="searchingGameSwitchLabel" htmlFor="searchingGameSelect">Game:</label>
