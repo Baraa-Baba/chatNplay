@@ -1,0 +1,30 @@
+name: Deploy server
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH and deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script_stop: true
+          script: |
+            set -e
+            cd /var/www/html/chatnplay
+            git fetch --all --prune
+            git reset --hard origin/main
+            npm ci --omit=dev
+            sudo systemctl restart chatnplay
+            sudo systemctl is-active chatnplay

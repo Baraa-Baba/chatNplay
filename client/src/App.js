@@ -278,6 +278,45 @@ function App() {
     return () => window.removeEventListener('resize', handleResize);
   }, [isDashboard]);
 
+  useEffect(() => {
+    const FILTER_ASSETS = [
+      '/threedostuffoldpublic/filters2Scripts/three.min.js',
+      '/threedostuffoldpublic/filters2Scripts/jeelizFaceFilter.js',
+      '/threedostuffoldpublic/filters2Scripts/JeelizThreeHelper.js',
+      '/threedostuffoldpublic/filters2Scripts/JeelizResizer.js',
+      '/threedostuffoldpublic/filters2Scripts/GLTFLoader.js',
+      '/threedostuffoldpublic/filters2Scripts/filterMain.js',
+      '/threedostuffoldpublic/filters2Scripts/neuralNets/NN_STANDARD_2.json',
+    ];
+
+    const prefetch = () => {
+      import('./Components/filters/Filters2').catch(() => {});
+      FILTER_ASSETS.forEach(href => {
+        if (document.querySelector(`link[data-prefetch="${href}"]`)) return;
+        const link = document.createElement('link');
+        link.rel = 'prefetch';
+        link.href = href;
+        link.setAttribute('data-prefetch', href);
+        link.onerror = () => link.remove();
+        document.head.appendChild(link);
+      });
+    };
+
+    const schedule = () => {
+      if ('requestIdleCallback' in window) {
+        window.requestIdleCallback(prefetch, { timeout: 4000 });
+      } else {
+        setTimeout(prefetch, 1500);
+      }
+    };
+
+    if (document.readyState === 'complete') {
+      schedule();
+    } else {
+      window.addEventListener('load', schedule, { once: true });
+    }
+    return () => window.removeEventListener('load', schedule);
+  }, []);
 
   useEffect(() => {
 
@@ -1304,7 +1343,7 @@ function App() {
           {searchingPartner && !isOnline ? (
             <div className="searchingCont">
               <p className="alertText searchingText">
-                Looking for a {gameLabel(userGame)} partner<span id='wait'></span>
+                Looking for  {gameLabel(userGame)} partner<span id='wait'></span>
               </p>
               <div className="searchingGameSwitch">
                 <label className="searchingGameSwitchLabel" htmlFor="searchingGameSelect">Game:</label>
