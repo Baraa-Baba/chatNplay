@@ -1,0 +1,54 @@
+{
+  "name": "client",
+  "version": "0.1.0",
+  "proxy": "http://localhost:8000",
+  "private": true,
+  "dependencies": {
+    "@testing-library/jest-dom": "^5.11.5",
+    "@testing-library/react": "^11.1.2",
+    "chess.js": "^0.12.0",
+    "chessboardjsx": "^2.4.7",
+    "firebase": "^9.17.2",
+    "moment-timezone": "^0.5.37",
+    "react": "^17.0.2",
+    "react-alice-carousel": "^2.6.4",
+    "react-bootstrap": "^2.1.2",
+    "react-chessboard": "^4.1.0",
+    "react-cookie-consent": "^7.3.1",
+    "react-dom": "^17.0.1",
+    "react-google-button": "^0.7.2",
+    "react-icons": "^3.11.0",
+    "react-phone-number-input": "^3.2.19",
+    "react-scripts": "4.0.0",
+    "sass": "^1.60.0",
+    "simple-peer": "^9.11.1",
+    "socket.io-client": "^3.0.1",
+    "uuid": "^9.0.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@webpack-cli/generators": "^2.5.0",
+    "react-error-overlay": "^6.0.9",
+    "react-router-dom": "^6.2.1"
+  }
+}

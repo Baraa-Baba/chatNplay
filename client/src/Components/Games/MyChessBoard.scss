@@ -1,0 +1,29 @@
+.ChessCont{
+    display:flex
+}
+.chess-info{ 
+    margin-left:1rem
+}
+.chess-info > p{
+    font-size:24px;
+    color:white;
+}
+.cessBoardCont{
+    width:50%;
+}
+@media (max-width:860px){ 
+    .cessBoardCont{
+        width:90%;
+    }
+    .chess-info{ 
+        margin-left:0;
+    }
+    .chess-info > p{
+        font-size:20px;
+        color:white;
+    }
+    .ChessCont{
+        display:flex;
+        flex-direction:column;
+    }
+}

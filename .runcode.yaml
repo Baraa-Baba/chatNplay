@@ -1,0 +1,15 @@
+onCreate:
+  - |
+        printf "\nWelcome to RunCode."
+        printf "\n\nThis is a blank workspace with vscode web."
+        printf "\n\nYou may change this content and automate as per your requirement"
+
+onStart:
+  - |
+        printf "\n\nThe .runcode.yaml file will automate installations and configurations."
+        printf "\n\nIt is having two parts, onCreate and onStart."
+        printf "\n\nnonCreate part will be executed first time when the workspace is launched."
+        printf "\n\nonStart part will be executed every time when the workspace is launched."
+        printf "\n\nFor Example: If you are developing a web application and want to see the output of the application running on local port 8000"
+        WS_DOMAIN=`cat /home/ubuntu/runcode/ws-url-domain.txt`
+        printf "\n\nnGO TO THIS URL TO VIEW PAGE \033[4;34m https://8000-${WS_DOMAIN}\033[0;30m\n\n"

@@ -1,0 +1,125 @@
+.game {
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+    align-items: center; 
+  }
+  
+  .game-board {
+    display: grid;
+    grid-template-columns: repeat(3, 100px);
+    grid-gap: 0px;
+    background-color: #555;
+    border: 2px solid #fff;
+    border-radius: 5px;
+  }
+  
+  .square {
+    font-size: 36px;
+    font-weight: bold;
+    color: #fff;
+    background-color: #555;
+    border: none;
+    cursor: pointer;
+    outline: none;
+    padding: 0;
+    width: 100%;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .square:hover {
+    background-color: #777;
+  }
+  
+  .game-info {
+    margin-left: 20px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    color: #E4EDDC;
+  }
+
+  
+  .game-board {
+    display: grid;
+    grid-template-columns: repeat(3, 100px);
+    grid-gap: 0px;
+    background-color: #333;
+    border:10px solid #333; 
+    border-radius: 5px;
+  }
+  
+  .square {
+    font-size: 36px;
+    font-weight: bold;
+    color: #fff;
+    background-color: #333;
+  }
+  .game-info {
+    margin-left: 20px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+  }
+  .square1,.square4,.square7{
+    border-top:10px solid #333;
+    border-bottom:10px solid #333
+  }
+  .square3,.square4,.square5{
+    border-right:10px solid #333;
+    border-left:10px solid #333
+  }
+  .game {
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+    align-items: center; 
+  }
+  
+  .game-board {
+    display: grid;
+    grid-template-columns: repeat(3, 100px);
+    grid-gap: 0px;
+    background-color: #555;
+    border: 2px solid #fff;
+    border-radius: 5px;
+  }
+  
+  .square {
+    font-size: 36px;
+    font-weight: bold;
+    color: #fff;
+    background-color: #555;
+    border: none;
+    cursor: pointer;
+    outline: none;
+    padding: 0;
+    width: 100%;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .square:hover {
+    background-color: #777;
+  }
+  
+    .square1,.square4,.square7{
+    border-top:10px solid #E4EDDC;
+    border-bottom:10px solid #E4EDDC
+  }
+  .square3,.square4,.square5{
+    border-right:10px solid #E4EDDC;
+    border-left:10px solid #E4EDDC
+  }
+  @media screen and (max-width: 860px) {
+    .game {
+      margin-top: 2rem;
+      flex-direction: column;
+    }
+  }
