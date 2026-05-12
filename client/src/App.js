@@ -417,8 +417,14 @@ function App() {
       if (!onlyChat) {
         pcRef.current = new RTCPeerConnection({
           iceServers: [
+            { urls: ['stun:stun.l.google.com:19302'] },
             {
-              urls: ['stun:stun1.l.google.com:19302'],
+              urls: [
+                'turn:62.171.175.172:3478?transport=udp',
+                'turn:62.171.175.172:3478?transport=tcp',
+              ],
+              username: 'turnuser',
+              credential: 'turnpass',
             },
           ],
           iceCandidatePoolSize: 10,
@@ -611,15 +617,14 @@ function App() {
         trickle: true,
         config: {
           iceServers: [
+            { urls: "stun:stun.l.google.com:19302" },
             {
-              urls: "stun:numb.viagenie.ca",
-              username: "chrisk1994@fajne.to",
-              credential: "123456789",
-            },
-            {
-              urls: "turn:numb.viagenie.ca",
-              username: "chrisk1994@fajne.to",
-              credential: "123456789",
+              urls: [
+                "turn:62.171.175.172:3478?transport=udp",
+                "turn:62.171.175.172:3478?transport=tcp",
+              ],
+              username: "turnuser",
+              credential: "turnpass",
             },
           ],
         },
