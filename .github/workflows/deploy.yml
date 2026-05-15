@@ -22,21 +22,64 @@ jobs:
           script_stop: true
           script: |
             set -e
-
             cd /var/www/html/chatnplay
+
+            mkdir -p .deploy
+            PREV_ROOT_LOCK=$(cat .deploy/root-lock.sha 2>/dev/null || echo "")
+            PREV_CLIENT_LOCK=$(cat .deploy/client-lock.sha 2>/dev/null || echo "")
+            PREV_CLIENT_SRC=$(cat .deploy/client-src.sha 2>/dev/null || echo "")
+            PREV_SERVER_SHA=$(cat .deploy/server.sha 2>/dev/null || echo "")
 
             git fetch --all --prune
             git reset --hard origin/main
 
-            # backend deps (root app)
-            npm ci --omit=dev
+            NEW_ROOT_LOCK=$(sha1sum package-lock.json | cut -d' ' -f1)
+            NEW_CLIENT_LOCK=$(sha1sum client/package-lock.json | cut -d' ' -f1)
+            NEW_CLIENT_SRC=$(find client/src client/public -type f \
+              \( -name '*.js' -o -name '*.jsx' -o -name '*.ts' -o -name '*.tsx' \
+                 -o -name '*.css' -o -name '*.scss' -o -name '*.html' \
+                 -o -name '*.json' \) -print0 \
+              | sort -z | xargs -0 sha1sum | sha1sum | cut -d' ' -f1)
+            NEW_SERVER_SHA=$(find . -maxdepth 2 -type f \
+              \( -name '*.js' -o -name '*.json' \) \
+              -not -path './client/*' -not -path './node_modules/*' \
+              -not -path './.deploy/*' -print0 \
+              | sort -z | xargs -0 sha1sum | sha1sum | cut -d' ' -f1)
 
-            # frontend build
-            cd client
-            npm ci
-            NODE_OPTIONS=--openssl-legacy-provider npm run build
-            cd ..
+            # 1) Backend deps — only if root lockfile changed
+            if [ "$NEW_ROOT_LOCK" != "$PREV_ROOT_LOCK" ] || [ ! -d node_modules ]; then
+              echo ">>> Installing backend deps"
+              npm ci --omit=dev --no-audit --no-fund --prefer-offline
+              echo "$NEW_ROOT_LOCK" > .deploy/root-lock.sha
+            else
+              echo ">>> Skipping backend install (lockfile unchanged)"
+            fi
 
-            # restart service
-            sudo systemctl restart chatnplay
-            sudo systemctl is-active chatnplay
+            # 2) Frontend — rebuild only if client deps OR client source changed
+            if [ "$NEW_CLIENT_LOCK" != "$PREV_CLIENT_LOCK" ] \
+               || [ "$NEW_CLIENT_SRC" != "$PREV_CLIENT_SRC" ] \
+               || [ ! -d client/build ]; then
+              echo ">>> Building frontend"
+              cd client
+              if [ "$NEW_CLIENT_LOCK" != "$PREV_CLIENT_LOCK" ] || [ ! -d node_modules ]; then
+                npm ci --no-audit --no-fund --prefer-offline
+                echo "$NEW_CLIENT_LOCK" > ../.deploy/client-lock.sha
+              fi
+              NODE_OPTIONS=--openssl-legacy-provider npm run build
+              echo "$NEW_CLIENT_SRC" > ../.deploy/client-src.sha
+              cd ..
+            else
+              echo ">>> Skipping frontend (no client changes)"
+            fi
+
+            # 3) Restart — only if backend code or deps changed
+            if [ "$NEW_SERVER_SHA" != "$PREV_SERVER_SHA" ] \
+               || [ "$NEW_ROOT_LOCK" != "$PREV_ROOT_LOCK" ]; then
+              echo ">>> Restarting service"
+              sudo systemctl restart chatnplay
+              sleep 1
+              sudo systemctl is-active chatnplay
+              echo "$NEW_SERVER_SHA" > .deploy/server.sha
+            else
+              echo ">>> Skipping restart (backend unchanged)"
+            fi
