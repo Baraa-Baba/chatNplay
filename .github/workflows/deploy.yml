@@ -22,11 +22,18 @@ jobs:
           script_stop: true
           script: |
             set -e
+
             cd /var/www/html/chatnplay
+
             git fetch --all --prune
             git reset --hard origin/main
+
             npm ci --omit=dev
-            cd client
+
+            cd ./client
+            npm ci
             NODE_OPTIONS=--openssl-legacy-provider npm run build
+
+            # ===== RESTART =====
             sudo systemctl restart chatnplay
             sudo systemctl is-active chatnplay
