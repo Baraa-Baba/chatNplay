@@ -1121,8 +1121,10 @@ function App() {
           stream
         );
         userVideo.current.srcObject = screenStream;
+        userVideo.current.style.transform = 'rotateY(0deg)';
         setScreenSharing(true);
         setShowFilterOptions(false);
+        socket.current?.emit("sendIsInverted", { message: 'inverted', peerId: partner });
         screenStream.getTracks()[0].onended = () => {
           setScreenSharing(false);
           if (onlyChat) {
@@ -1139,6 +1141,8 @@ function App() {
             );
           }
           userVideo.current.srcObject = stream;
+          userVideo.current.style.transform = '';
+          socket.current?.emit("sendIsInverted", { message: filter || 'none', peerId: partner });
         };
       },
       (err) => {
