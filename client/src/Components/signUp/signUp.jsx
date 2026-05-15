@@ -6,10 +6,24 @@ import GoogleSignIn from "./GoogleSignIn";
 import EmailSignIn from "./EmailSignIn";
 import PhoneSignUp from "./PhoneSignUp";
 import './SignUp.scss'
-import {
-  FaPhone,
-  FaTimes
-} from "react-icons/fa";
+import { FaTimes } from "react-icons/fa";
+
+const PhoneIcon = () => (
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <rect x="6" y="2.5" width="12" height="19" rx="3" />
+    <line x1="11" y1="18.5" x2="13" y2="18.5" />
+  </svg>
+);
 const SignIn = ({setIsSignUpOpen,signUp}) => { 
   const [IsPhone,setIsPhone]=useState(false) 
   const [isSignUp,setissignUp]=useState(signUp)
@@ -32,10 +46,10 @@ const SignIn = ({setIsSignUpOpen,signUp}) => {
        {!IsPhone&& <div className="everythingElse">
           <div className="flexRow">
       <p className="signInTitle">
-        {!isSignUp ? 'log in' : 'Sign up'}
+        {!isSignUp ? 'Log in' : 'Sign up'}
         </p>
       <button className="switchSign" onClick={()=>setissignUp(!isSignUp)}>
-        {!isSignUp ?'Sign up' :'log in '}
+        {!isSignUp ?'Sign up' :'Log in'}
       </button>
       </div>
         <EmailSignIn isSignUp={isSignUp} />
@@ -43,14 +57,12 @@ const SignIn = ({setIsSignUpOpen,signUp}) => {
         
         <GoogleSignIn />
         </div>}
-       {!IsPhone&& <div onClick={()=>setIsPhone(true)} className="signInbutton phoneNumberButton">
-       <div className="PhoneIconCont">
-       <FaPhone />
-       </div> 
-       <span className="center">
-       log in using phone number
+       {!IsPhone&& <button type="button" onClick={()=>setIsPhone(true)} className="signInbutton phoneNumberButton">
+       <PhoneIcon />
+       <span className="phoneButtonLabel">
+       Continue with phone number
        </span>
-        </div>}
+        </button>}
         { IsPhone&&
         <PhoneSignUp setIsPhone={setIsPhone} />
         }

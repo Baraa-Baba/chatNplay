@@ -14,8 +14,13 @@ export default function DarkMode() {
           color: #E4EDDC;
         }
         .chatInput{
-        color:#333 !important
-        } 
+          background:#0B1422 !important;
+          color:#fff !important;
+          border-color:rgba(255,255,255,0.08) !important;
+        }
+        .chatInput::placeholder{
+          color:rgba(255,255,255,0.45) !important;
+        }
         .dashboardLabel{
             color:white
           }
@@ -140,12 +145,10 @@ export default function DarkMode() {
               font-size:2rem;
               color:#ffffff
             } 
-            .chatInput{
-              background-color:#444444; 
-              color:#eeee
-            }
-            .chatInput::placeholder{
-              color:#6F8094;
+            .chatInput:focus{
+              background:#0B1422 !important;
+              color:#fff !important;
+              border-color:#4CB1F7 !important;
             }
             .whitebgInput,.whitebgInputMobile{
               background:#111B2B !important
@@ -199,6 +202,122 @@ export default function DarkMode() {
 .partnerVideoContainer{
   box-shadow: unset;
 
+}
+
+/* ─── Dark-mode hover overrides ─────────────────────────────── */
+.filtersRow{
+  background:#1F2A3D !important;
+  border-color:rgba(255,255,255,0.08) !important;
+  box-shadow:none !important;
+}
+.filtersDivider{
+  background:rgba(255,255,255,0.10) !important;
+}
+.filtersRow .filtersDropdownInner:hover{
+  background:rgba(255,255,255,0.06) !important;
+}
+.filtersRow .desktopDarkModeControls:hover{
+  background:rgba(255,255,255,0.06) !important;
+}
+.iconContainer:hover{
+  background:rgba(255,255,255,0.06) !important;
+}
+.radioDarkMode{
+  background:rgba(255,255,255,0.04) !important;
+  border-color:rgba(255,255,255,0.10) !important;
+}
+.radioDarkMode:hover{
+  background:rgba(255,255,255,0.08) !important;
+  border-color:#4CB1F7 !important;
+}
+.logInSubCont:hover{
+  background:rgba(255,255,255,0.06) !important;
+  border-color:rgba(255,255,255,0.10) !important;
+}
+.nav-icon-btn:hover{
+  background:rgba(255,255,255,0.06) !important;
+}
+.searchingGameSwitch{
+  background:rgba(255,255,255,0.04) !important;
+  border-color:rgba(255,255,255,0.10) !important;
+}
+.searchingGameSelect{
+  color:#E4EDDC !important;
+}
+.searchingGameSwitchLabel{
+  color:#9CA3AF !important;
+}
+.handleFriendsRequestButtons.noButton{
+  background:transparent !important;
+  color:#E4EDDC !important;
+  border-color:rgba(255,255,255,0.14) !important;
+}
+.handleFriendsRequestButtons.noButton:hover{
+  background:rgba(255,255,255,0.06) !important;
+}
+.switchSign{
+  background:transparent !important;
+  border-color:rgba(255,255,255,0.14) !important;
+  color:#4CB1F7 !important;
+}
+.switchSign:hover{
+  background:rgba(76,177,247,0.10) !important;
+  border-color:#4CB1F7 !important;
+  color:#4CB1F7 !important;
+}
+.signCont{
+  background:#1F2A3D !important;
+  box-shadow:0 8px 32px rgba(0,0,0,0.4) !important;
+}
+.signInTitle{
+  color:#fff !important;
+}
+.signInput,.PhoneInputInput{
+  background:rgba(255,255,255,0.05) !important;
+  border-color:rgba(255,255,255,0.10) !important;
+  color:#fff !important;
+}
+.signInput::placeholder,.PhoneInputInput::placeholder{
+  color:#9CA3AF !important;
+}
+.signInput:focus,.PhoneInputInput:focus{
+  border-color:#4CB1F7 !important;
+  background:rgba(255,255,255,0.07) !important;
+}
+.phoneNumberButton{
+  background:transparent !important;
+  color:#E4EDDC !important;
+  border-color:rgba(255,255,255,0.14) !important;
+}
+.phoneNumberButton:hover{
+  background:rgba(255,255,255,0.06) !important;
+  border-color:rgba(255,255,255,0.22) !important;
+}
+.GoogleButton{
+  background:rgba(255,255,255,0.05) !important;
+  color:#fff !important;
+  border-color:rgba(255,255,255,0.10) !important;
+}
+.GoogleButton:hover{
+  background:rgba(255,255,255,0.08) !important;
+  border-color:rgba(255,255,255,0.18) !important;
+}
+.selectGender,.goog-te-combo{
+  background:#0B1422 !important;
+  color:#fff !important;
+  border-color:rgba(255,255,255,0.12) !important;
+}
+.selectGender option,.goog-te-combo option{
+  background:#0B1422 !important;
+  color:#fff !important;
+}
+.selectGender:hover,.goog-te-combo:hover{
+  background:#11192B !important;
+  border-color:rgba(255,255,255,0.22) !important;
+}
+.selectGender:focus,.goog-te-combo:focus{
+  background:#0B1422 !important;
+  border-color:#4CB1F7 !important;
 }
             `}</style>
     </div>

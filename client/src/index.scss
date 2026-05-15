@@ -23,6 +23,10 @@ body {
   /* Stage offset — extra horizontal padding past 1400px so the absolutely
      positioned video / chat / buttons cluster stays centered on wide screens. */
   --stage-offset: max(0px, calc((100vw - 1400px) / 2));
+
+  /* Shared video tile height — partner + user use this so they always stack flush. */
+  --video-w: min(500px, 44vw);
+  --video-h: min(calc(var(--video-w) * 0.75), calc(50vh - 64px));
 }
 
 @media screen and (max-width: 860px) {
@@ -53,14 +57,13 @@ button { font-family: inherit; }
 
 /* ─── Video tiles ─────────────────────────────────────────────── */
 .videoContainer {
-  width: min(500px, 44vw);
+  width: var(--video-w);
   max-width: 44vw !important;
   position: absolute;
   z-index: 99;
   background-color: $dark;
-  /* 4:3 aspect ratio derived from width */
-  height: calc(min(500px, 44vw) * 0.75);
-  max-height: calc(50vh - 64px);
+  /* 4:3 aspect ratio, clamped by viewport height */
+  height: var(--video-h);
   top: 80px;
   margin-left: calc(16px + var(--stage-offset));
   border-radius: $r-lg;
@@ -122,7 +125,7 @@ button { font-family: inherit; }
 }
 
 .userVideoContainer {
-  top: calc(min(500px, 44vw) * 0.75 + 96px);
+  top: calc(80px + var(--video-h) + 16px);
   overflow: visible; /* allow desktop controls to overflow */
 }
 
@@ -619,7 +622,7 @@ button { font-family: inherit; }
 /* ─── Selects / form ──────────────────────────────────────────── */
 #selectGenderPrefrence {
   color: $primary;
-  font-size: 1.2rem;
+  font-size: 0.95rem;
   cursor: pointer;
   background: none;
   border: none;
@@ -629,26 +632,38 @@ button { font-family: inherit; }
 }
 
 #genderPrefrenceCont { position: relative; }
-#width_tmp_option    { font-size: 1.2rem; }
+#width_tmp_option    { font-size: 0.95rem; }
 
 .selectGender, .goog-te-combo {
   background: $surface;
+  width: 250px;
   border: 1px solid $border;
   border-radius: $r-sm;
   color: $text;
-  display: block;
+  display: inline-block;
   font-family: inherit;
-  font-size: 1.4rem;
+  font-size: 0.95rem;
   font-weight: 500;
-  padding: 8px 1.5rem;
+  padding: 7px 12px;
   outline: none;
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s;
 
-  &:focus { 
+  &:hover { border-color: $border-strong; background: $surface-2; }
+  &:focus {
     border-color: $primary;
-    background: $surface-2;
+    background: $surface;
   }
+}
+
+.chooseGameLabel {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: $text-muted;
 }
 
 .genderOptions { color: $text-muted; }
@@ -964,7 +979,7 @@ button { font-family: inherit; }
 /* ─── Responsive: 860px ──────────────────────────────────────── */
 @media screen and (max-width: 860px) {
   .desktopHidden { display: none !important; }
-  .font26Mobile  { font-size: 24px !important; }
+  .font26Mobile  { font-size: 1rem !important; }
 
   .flexCenterMobile {
     display: flex;
@@ -1015,9 +1030,9 @@ button { font-family: inherit; }
   }
 
   #selectGender {
-    font-size: 1.3rem;
+    font-size: 1rem;
     border-radius: $r-sm;
-    padding: 0.4rem 1.25rem;
+    padding: 7px 12px;
   }
 
   .startAndSelectGenderCont {
@@ -1112,7 +1127,7 @@ button { font-family: inherit; }
     bottom: 0.5rem;
   }
 
-  .selectGender { font-size: 1.15rem; margin-bottom: 5px; }
+  .selectGender { font-size: 0.95rem; margin-bottom: 5px; }
 
   .enjoyInstant {
     font-size: 1.85rem !important;
@@ -1122,7 +1137,7 @@ button { font-family: inherit; }
   .openerForCont {
     position: absolute;
     cursor: pointer;
-    top: 10px;
+    top: 0;
     z-index: 1000000000;
     right: 3.5rem;
     background: none;
@@ -1142,9 +1157,9 @@ button { font-family: inherit; }
 
 @media screen and (max-width: 460px) {
   #selectGender {
-    font-size: 1.2rem;
+    font-size: 0.95rem;
     border-radius: $r-sm;
-    padding: 0.35rem 0.75rem;
+    padding: 6px 10px;
   }
   .enjoyInstant { font-size: 1.5rem !important; }
   .StartButton  { font-size: 1rem !important; padding: 12px 2.5rem !important; }

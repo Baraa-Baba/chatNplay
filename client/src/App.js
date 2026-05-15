@@ -861,8 +861,7 @@ function App() {
 
   function gameLabel(g) {
     if (g === 'chess') return 'Chess';
-    if (g === 'ticTak') return 'Tic-Tac-Toe';
-    if (g === 'superTicTak') return 'Super Tic-Tac-Toe';
+    if (g === 'ticTak') return 'Tic-Tac-Toe';  
     return 'Chat only';
   }
   useEffect(() => {
@@ -1361,8 +1360,7 @@ function App() {
                 >
                   <option value="no-game">Chat only</option>
                   <option value="chess">Chess</option>
-                  <option value="ticTak">Tic-Tac-Toe</option>
-                  <option value="superTicTak">Super Tic-Tac-Toe</option>
+                  <option value="ticTak">Tic-Tac-Toe</option> 
                 </select>
               </div>
             </div>
@@ -2085,17 +2083,18 @@ width:1.5rem;
       }   
       .partnerVideoContainer{
         display:${isStarted && 'block'};
-        min-width:100%;
-        max-width:100%;
-        min-height:calc(100% - 53px);
+        min-width:calc(100% + 20px);
+        max-width:calc(100% + 20px);
+        min-height:calc(100% - 43px);
         background:#E8F1F5;
         z-index:1;
         border-radius:0;
-        max-height:calc(100% - 53px);
-        top:53px; 
-        
-        position:absolute;  
+        max-height:calc(100% - 43px);
+        top:43px;
+
+        position:absolute;
         left:-10px;
+        right:-10px;
       }
       
   .userVideoContainer{

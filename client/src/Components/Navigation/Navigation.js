@@ -30,13 +30,13 @@ const Navigation = ({ setisDashboard, isDashboard, online,isStarted }) => {
             title="Sign in"
             style={{ position: 'absolute', top: 10, right: '1rem', background: 'none', border: 'none', cursor: 'pointer' }}
           >
-            <FaUser size={28} color="#005691" />
+            <FaUser size={24} color="#6B7280" />
           </button>
 
           <div onClick={() => setIsSignUpOpenL(!isSignUpOpenL)} className="logInCont">
             <div className="logInSubCont">
-              <FaUserCircle className="logInIcon" size={22} color="#16A34A" />
-              <span className="logIn">login</span>
+              <FaUserCircle className="logInIcon" size={20} color="#6B7280" />
+              <span className="logIn">Log in</span>
               {isSignUpOpenL && (
                 <SignIn signUp={false} setIsSignUpOpen={setIsSignUpOpenL} />
               )}
@@ -53,7 +53,7 @@ const Navigation = ({ setisDashboard, isDashboard, online,isStarted }) => {
         <a href="/dashboard">
           <button className="nav-icon-btn sigininpop mobileOnly" title="My account"
             style={{ position: 'absolute', top: 10, right: '1rem', background: 'none', border: 'none', cursor: 'pointer' }}>
-            <FaUser size={28} color="#005691" />
+            <FaUser size={24} color="#6B7280" />
           </button>
         </a>
       )}
@@ -65,8 +65,8 @@ const Navigation = ({ setisDashboard, isDashboard, online,isStarted }) => {
           style={{ right: 0 }}
         >
           <div className="logInSubCont myAccountlogInSubCont">
-            <FaUserCircle className="logInIcon" size={22} color="#16A34A" />
-            <span className="logIn myAccountextt">my account</span>
+            <FaUserCircle className="logInIcon" size={20} color="#6B7280" />
+            <span className="logIn myAccountextt">My account</span>
           </div>
         </div>
       )}
