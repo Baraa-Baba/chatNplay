@@ -26,5 +26,6 @@ jobs:
             git fetch --all --prune
             git reset --hard origin/main
             npm ci --omit=dev
+            NODE_OPTIONS=--openssl-legacy-provider npm run build
             sudo systemctl restart chatnplay
             sudo systemctl is-active chatnplay
