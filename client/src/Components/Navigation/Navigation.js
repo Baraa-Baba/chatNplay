@@ -30,7 +30,7 @@ const Navigation = ({ setisDashboard, isDashboard, online,isStarted }) => {
             title="Sign in"
             style={{ position: 'absolute', top: 10, right: '1rem', background: 'none', border: 'none', cursor: 'pointer' }}
           >
-            <FaUser size={24} color="#6B7280" />
+            <FaUser size={22} color="#6B7280" />
           </button>
 
           <div onClick={() => setIsSignUpOpenL(!isSignUpOpenL)} className="logInCont">
@@ -53,7 +53,7 @@ const Navigation = ({ setisDashboard, isDashboard, online,isStarted }) => {
         <a href="/dashboard">
           <button className="nav-icon-btn sigininpop mobileOnly" title="My account"
             style={{ position: 'absolute', top: 10, right: '1rem', background: 'none', border: 'none', cursor: 'pointer' }}>
-            <FaUser size={24} color="#6B7280" />
+            <FaUser size={22} color="#6B7280" />
           </button>
         </a>
       )}

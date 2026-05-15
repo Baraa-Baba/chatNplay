@@ -205,6 +205,21 @@ export default function DarkMode() {
 }
 
 /* ─── Dark-mode hover overrides ─────────────────────────────── */
+.navgation,.headerContainer{
+  background:#1F2A3D !important;
+  border-bottom-color:rgba(255,255,255,0.08) !important;
+}
+.logoText{
+  color:#E2E8F0 !important;
+}
+.logIn{
+  color:#E2E8F0 !important;
+}
+.openerForCont:hover{
+  background:rgba(255,255,255,0.06) !important;
+}
+.openerForCont svg [fill="#005691"]{ fill:#9CA3AF !important; }
+.openerForCont svg [stroke="#005691"]{ stroke:#9CA3AF !important; }
 .filtersRow{
   background:#1F2A3D !important;
   border-color:rgba(255,255,255,0.08) !important;

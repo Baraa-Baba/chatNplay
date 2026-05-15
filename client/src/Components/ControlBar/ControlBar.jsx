@@ -61,12 +61,14 @@ export default function ControlBar({
       </button>
 
       <button
-        className={`ctrl-btn ${filterActive ? 'ctrl-btn--filter' : 'ctrl-btn--subtle'}`}
-        onClick={onToggleFilters}
-        title="Face filters"
+        className={`ctrl-btn ${filterActive ? 'ctrl-btn--filter' : 'ctrl-btn--subtle'} ${isScreenSharing ? 'ctrl-btn--disabled' : ''}`}
+        onClick={isScreenSharing ? undefined : onToggleFilters}
+        disabled={isScreenSharing}
+        aria-disabled={isScreenSharing}
+        title={isScreenSharing ? 'Filters disabled while sharing screen' : 'Face filters'}
       >
         <FaMagic size={17} />
-        {filter && filter !== 'none' && <span className="ctrl-filter-dot" />}
+        {filter && filter !== 'none' && !isScreenSharing && <span className="ctrl-filter-dot" />}
       </button>
     </div>
   );

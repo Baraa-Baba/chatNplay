@@ -7,7 +7,7 @@ import { countries, zones } from 'moment-timezone/data/meta/latest.json'
 import { Link } from "react-router-dom";
 import ChooseGame from "./Components/ChooseGame/ChooseGame";
 import MyChessBoard from './Components/Games/MyChessBoard'
-import { FaUsers, FaUserPlus, FaUser, FaPaperPlane } from 'react-icons/fa';
+import { FaUsers, FaUserPlus, FaUser, FaPaperPlane, FaTimes } from 'react-icons/fa';
 import Navigation from "./Components/Navigation/Navigation";
 import Chat from "./Components/Chat/Chat";
 import Footer from "./Components/Footer/Footer";
@@ -785,6 +785,11 @@ function App() {
     }
   }, [isMobile])
   useEffect(() => {
+    if (!isOnline) {
+      setIsSwaped(false)
+    }
+  }, [isOnline])
+  useEffect(() => {
     navigator.mediaDevices.getUserMedia({ video: true }).then(
       () => {
         //do nothing
@@ -1037,8 +1042,7 @@ function App() {
     }
   }
   function handleSwapVideos() {
-    if (isMobile && isStarted) {
-
+    if (isMobile && isStarted && isOnline) {
       setIsSwaped(!isSwaped)
     }
   }
@@ -1118,6 +1122,7 @@ function App() {
         );
         userVideo.current.srcObject = screenStream;
         setScreenSharing(true);
+        setShowFilterOptions(false);
         screenStream.getTracks()[0].onended = () => {
           setScreenSharing(false);
           if (onlyChat) {
@@ -1663,10 +1668,17 @@ function App() {
           }
         </>
         }
+        {isMobile && isGenderContopen && (
+          <div className="quickSettingsOverlay" onClick={() => setisGenderContopen(false)} />
+        )}
         <div id='gender-cont' className={`gender-cont ${isFullScreen && 'gender-contFullSize'}`}>
           <div className="chatFiltersCont">
-            <h3 className='quickSettings'>quick settings</h3>
-            {isMobile && isDashboard && <button onClick={() => setisGenderContopen(false)} className='closechatFiltersCont'>X</button>}
+            <h3 className='quickSettings'>Quick settings</h3>
+            {isMobile && (
+              <button onClick={() => setisGenderContopen(false)} className='closechatFiltersCont' aria-label="Close settings">
+                <FaTimes />
+              </button>
+            )}
             {!innerWidth || innerWidth < 860 && !isDashboard && <div id='SettingsGoogleTranslate'
               style={{ position: 'static', fontSize: '1.5rem' }} className='mainGoogleTranslate'>
               <ChooseGame userGame={userGame} setUserGame={setUserGame} />
@@ -1674,7 +1686,7 @@ function App() {
 
             <p className="chatFiltersLabel">Chat filters:</p>
             <div className="filtersRow">
-            <span style={{ zIndex: '300000', cursor: 'pointer' }} className='desktopDarkModeControls filtersRowItem' onClick={() => setisDarkMode(!isDarkMode)} title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}>
+            {!isMobile && <span style={{ zIndex: '300000', cursor: 'pointer' }} className='desktopDarkModeControls filtersRowItem' onClick={() => setisDarkMode(!isDarkMode)} title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}>
               {isDarkMode ?
                 <svg width="28" height="28" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M25.0002 38.5417C28.5916 38.5417 32.036 37.115 34.5756 34.5754C37.1151 32.0359 38.5418 28.5915 38.5418 25C38.5418 21.4086 37.1151 17.9642 34.5756 15.4246C32.036 12.8851 28.5916 11.4584 25.0002 11.4584C21.4087 11.4584 17.9643 12.8851 15.4248 15.4246C12.8852 17.9642 11.4585 21.4086 11.4585 25C11.4585 28.5915 12.8852 32.0359 15.4248 34.5754C17.9643 37.115 21.4087 38.5417 25.0002 38.5417Z" fill="#F9B42E" stroke="#F9B42E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
@@ -1703,7 +1715,7 @@ function App() {
                     </filter>
                   </defs>
                 </svg>}
-            </span>
+            </span>}
             <span className="filtersDivider" aria-hidden="true" />
             <div id='genderPrefrenceCont' className="filtersRowItem">
               <div className="filtersDropdownGroup">
@@ -1960,27 +1972,170 @@ top: 0;
 .openerForCont{ 
   display:block
 } 
-  #gender-cont{ 
-    height:25rem;
+  .quickSettingsOverlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.55);
+    z-index:1000000000000;
+    animation:fadeOverlay 0.18s ease-out;
+  }
+  @keyframes fadeOverlay{
+    from{ opacity:0; }
+    to  { opacity:1; }
+  }
+  #gender-cont{
+    height:auto;
+    max-height:85vh;
+    overflow-y:auto;
     top:50vh;
-    z-index:1000000000000;  
-    position: absolute;   
-  transform: translate(-50%, -50%);
-    width:90vw;
-    border:2px solid black;
-    border-radius:35px;
-    position:absolute;
-    background:${isDarkMode ? '#111B2B' : 'white'}; 
-    left:${isGenderContopen ? '50%' : '-1000%'}; 
-  } 
-  #gender-cont div{
+    z-index:1000000000001;
+    position:fixed;
+    transform:translate(-50%, -50%);
+    width:min(420px, 92vw);
+    border:1px solid ${isDarkMode ? 'rgba(255,255,255,0.10)' : '#E5E7EB'};
+    border-radius:16px;
+    padding:22px 22px 22px 22px;
+    box-shadow:${isDarkMode ? '0 16px 48px rgba(0,0,0,0.55)' : '0 16px 40px rgba(17,24,39,0.18)'};
+    background:${isDarkMode ? '#1F2A3D' : '#fff'};
+    left:${isGenderContopen ? '50%' : '-1000%'};
+  }
+  #gender-cont .quickSettings{
+    display:block;
+    margin:0 0 18px 0;
+    font-size:1.05rem;
+    font-weight:700;
+    letter-spacing:-0.01em;
+    text-transform:none;
+    color:${isDarkMode ? '#fff' : '#111827'};
+  }
+  #gender-cont .chatFiltersCont{
+    position:static;
+    padding:0;
+  }
+  #gender-cont .dashboardLabel,
+  #gender-cont .chooseGameLabel,
+  #gender-cont .chatFiltersLabel{
+    display:block;
+    margin:0 0 8px 0;
+    font-size:0.72rem;
+    font-weight:600;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    color:${isDarkMode ? '#9CA3AF' : '#6B7280'};
+  }
+  #gender-cont #SettingsGoogleTranslate{
     display:block !important;
+    position:static !important;
+    left:auto !important;
+    max-height:none !important;
+    margin:0 0 18px 0 !important;
+    padding:0 !important;
+    font-size:1rem !important;
+    align-items:stretch !important;
+  }
+  #gender-cont #SettingsGoogleTranslate .selectGender{
+    width:100%;
+    font-size:0.95rem !important;
+    padding:9px 12px;
+  }
+  #gender-cont .chatFiltersLabel{
+    margin-top:0;
+  }
+  #gender-cont .filtersRow{
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    width:100%;
+    gap:0;
+    padding:0;
+    background:transparent !important;
+    border:none !important;
+    border-radius:0 !important;
+    box-shadow:none !important;
+  }
+  #gender-cont .filtersDivider,
+  #gender-cont .desktopDarkModeControls,
+  #gender-cont span.desktopDarkModeControls,
+  #gender-cont .filtersRow > .desktopDarkModeControls{
+    display:none !important;
+    visibility:hidden !important;
+    width:0 !important;
+    height:0 !important;
+    overflow:hidden !important;
+    position:absolute !important;
+    pointer-events:none !important;
+  }
+  #gender-cont .filtersDropdownGroup{
+    display:flex;
+    flex-direction:column;
+    width:100%;
+  }
+  #gender-cont .filtersDropdownInner{
+    width:100%;
+    padding:0;
+    gap:10px;
+    background:transparent !important;
+    border-radius:0 !important;
+  }
+  #gender-cont .filtersDropdownInner:hover{
+    background:transparent !important;
+  }
+  #gender-cont .filtersRow #selectGenderPrefrence{
+    width:auto !important;
+    flex:1;
+    font-size:0.95rem;
   }
   #gender-cont .mobileDarkModeContrals{
     display:flex !important;
+    flex-direction:row;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:10px;
+    padding:14px 0 0 0;
+    border:none;
+    margin-top:8px;
+    position:relative;
   }
-  #gender-cont{
-     back
+  #gender-cont .mobileDarkModeContrals::before{
+    content:'Theme';
+    display:block;
+    width:100%;
+    margin-bottom:4px;
+    font-size:0.72rem;
+    font-weight:600;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    color:${isDarkMode ? '#9CA3AF' : '#6B7280'};
+  }
+  #gender-cont .radioDarkMode{
+    width:40px;
+    height:40px;
+    margin-top:0;
+  }
+  #gender-cont .radioDarkMode svg{
+    width:22px !important;
+    height:22px !important;
+  }
+  #gender-cont .closechatFiltersCont{
+    display:inline-flex !important;
+    align-items:center;
+    justify-content:center;
+    width:32px;
+    height:32px;
+    border-radius:50%;
+    position:absolute;
+    top:14px;
+    right:14px;
+    font-size:0.9rem;
+    background:transparent;
+    border:none;
+    cursor:pointer;
+    color:${isDarkMode ? '#9CA3AF' : '#6B7280'};
+    transition:background 0.15s, color 0.15s;
+  }
+  #gender-cont .closechatFiltersCont:hover{
+    background:${isDarkMode ? 'rgba(255,255,255,0.08)' : '#F3F4F6'};
+    color:${isDarkMode ? '#fff' : '#111827'};
   }
   #partner-filter-options{
     background-color: white;

@@ -910,6 +910,32 @@ button { font-family: inherit; }
   bottom: 80px;
 }
 
+/* ─── Mobile quick-settings opener (gear icon) ───────────────── */
+.openerForCont {
+  width: 36px;
+  height: 36px;
+  padding: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.15s;
+
+  &:hover { background: $surface-3; }
+
+  svg {
+    width: 22px !important;
+    height: 22px !important;
+    filter: none;
+
+    /* Drop the original baked-in drop-shadow and recolor strokes/fills
+       so the gear matches the neutral nav icon palette. */
+    g[filter] { filter: none; }
+    [fill="#005691"]   { fill: $text-muted !important; }
+    [stroke="#005691"] { stroke: $text-muted !important; }
+  }
+}
+
 .radioDarkMode {
   background: $surface-3;
   border: 1px solid $border;
@@ -1137,12 +1163,12 @@ button { font-family: inherit; }
   .openerForCont {
     position: absolute;
     cursor: pointer;
-    top: 0;
+    top: 10px;
     z-index: 1000000000;
-    right: 3.5rem;
+    right: 3.25rem;
     background: none;
     border: none;
-    display: block;
+    display: inline-flex;
   }
 
   #partner-filter-options {
