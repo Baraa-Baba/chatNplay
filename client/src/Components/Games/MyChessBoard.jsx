@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Chess from "chess.js";
 import { Chessboard } from "react-chessboard";
 import './MyChessBoard.scss'
+import { toast } from '../Toast/Toast';
 export default function MyChessBoard({ isWhite, sendMoveSocket, passedMove }) {
   const [game, setGame] = useState(new Chess());
   const [userScore, setUserScore] = useState(0)
@@ -33,10 +34,9 @@ export default function MyChessBoard({ isWhite, sendMoveSocket, passedMove }) {
       const result = gameCopy.move(passedMove);
       const possibleMoves = gameCopy.moves();
       if (gameCopy.game_over() || gameCopy.in_draw() || possibleMoves.length === 0) {
-        alert(gameCopy.in_checkmate())
         if (gameCopy.in_checkmate()) {
+          toast.info('Checkmate — partner wins')
           setpartnerScore(partnerScore + 1)
-
         }
         gameCopy.reset()
         console.log(gameCopy)

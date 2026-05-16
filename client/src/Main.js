@@ -10,10 +10,11 @@ import Credits from './Components/credits/credits';
 import SignIn from './Components/signUp/signUp';
 import Dashboard from './Components/Dashboard/Dashboard';
 import Protected from './Components/Protected/Protected';
+import { ToastProvider } from './Components/Toast/Toast';
 
 function Main() {
   return (
-    <>
+    <ToastProvider>
       <Router>
         <Routes> 
           <Route path="/" element={<App />} /> 
@@ -27,7 +28,7 @@ function Main() {
           } />
         </Routes>
       </Router>
-    </>
+    </ToastProvider>
   )
 }
 

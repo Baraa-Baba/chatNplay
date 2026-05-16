@@ -14,6 +14,7 @@ import Footer from "./Components/Footer/Footer";
 import DarkMode from "./Components/DarkMode/DarkMode";
 import ControlBar from "./Components/ControlBar/ControlBar";
 import FilterCarousel from "./Components/FilterCarousel/FilterCarousel";
+import { toast } from "./Components/Toast/Toast";
 import LazyFilters2 from "./Components/LazyFilters/LazyFilters";
 import { useNavigate } from 'react-router-dom';
 import { setDoc, doc, getDoc } from "firebase/firestore";
@@ -139,7 +140,7 @@ function App() {
           }
           , { merge: true });
       } catch (e) {
-        alert('error in saving changes')
+        toast.error('Error in saving changes')
 
         console.error("Error adding document: ", e);
       }
@@ -1099,7 +1100,7 @@ function App() {
       return
     } else {
       if (e.target.value == 'loginUsers') {
-        alert('you have to be logged in to activate this feature')
+        toast.info('You have to be logged in to activate this feature')
         return
       }
     }
@@ -1108,7 +1109,7 @@ function App() {
       adjustWidth()
       return
     } else {
-      alert('you have to be logged in using your phone number to activate this feature')
+      toast.info('You have to be logged in using your phone number to activate this feature')
     }
   }
   function shareScreen() {

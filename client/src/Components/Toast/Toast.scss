@@ -1,0 +1,89 @@
+@import "../../variables.scss";
+
+.toast-container {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 2147483647;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+  max-width: calc(100vw - 32px);
+}
+
+.toast {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 260px;
+  max-width: 380px;
+  padding: 12px 12px 12px 14px;
+  border-radius: 12px;
+  background: $surface;
+  color: $text;
+  border: 1px solid $border;
+  box-shadow: 0 8px 28px rgba(17, 24, 39, 0.14);
+  font-family: inherit;
+  font-size: 0.92rem;
+  line-height: 1.4;
+  animation: toastIn 0.18s ease-out;
+
+  &__icon {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    margin-top: 1px;
+  }
+
+  &__msg {
+    flex: 1;
+    word-break: break-word;
+  }
+
+  &__close {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    margin-left: 4px;
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    color: $text-faint;
+    transition: background 0.15s, color 0.15s;
+
+    &:hover {
+      background: $surface-3;
+      color: $text;
+    }
+  }
+
+  &--success {
+    border-color: rgba(22, 163, 74, 0.25);
+    .toast__icon { color: $success; }
+  }
+
+  &--error {
+    border-color: rgba(220, 38, 38, 0.25);
+    .toast__icon { color: $danger; }
+  }
+
+  &--info {
+    border-color: rgba(37, 99, 235, 0.25);
+    .toast__icon { color: $primary; }
+  }
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+

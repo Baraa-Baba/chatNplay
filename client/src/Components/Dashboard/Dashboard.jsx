@@ -16,6 +16,7 @@ import '../signUp/SignUp.scss'
 import ImageInputDisplay from './ImageInputDisplay';
 import DarkMode from '../DarkMode/DarkMode'; 
 import ChooseGame from '../ChooseGame/ChooseGame';
+import { toast } from '../Toast/Toast';
 const Dashboard = ({setisDashboard,isDashboard}) => { 
     const divRref = useRef(null);
 
@@ -226,10 +227,10 @@ const Dashboard = ({setisDashboard,isDashboard}) => {
           userAuthPrefernce:userAuthPrefernce
           
         },{merge:true});   
-        alert('changes were successfully saved')
+        toast.success('Changes saved')
         navigate('/')
-      } catch (e) { 
-        alert('error',e)
+      } catch (e) {
+        toast.error('Error saving changes')
         console.error("Error adding document: ", e); 
       }
     }

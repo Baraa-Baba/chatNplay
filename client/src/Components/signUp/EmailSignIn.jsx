@@ -4,7 +4,8 @@ import {
   isSignInWithEmailLink
 } from "firebase/auth"; 
 import React, { useState,useEffect } from 'react';
-import { auth } from "../../firebase"; 
+import { auth } from "../../firebase";
+import { toast } from "../Toast/Toast";
  
 
 export default function EmailSignIn({isSignUp}) { 
@@ -41,7 +42,7 @@ export default function EmailSignIn({isSignUp}) {
       // The client SDK will parse the code from the link for you.
       signInWithEmailLink(auth, email, window.location.href)
         .then((result) => {
-          alert('logged') 
+          toast.success('Logged in')
           window.localStorage.removeItem('emailForSignIn'); 
         })
         .catch((error) => {

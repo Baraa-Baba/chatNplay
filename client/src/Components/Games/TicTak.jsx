@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './TicTak.scss';
+import { toast } from '../Toast/Toast';
 
 function TicTak({isX,passedXIndex,sendBoardSocket,setPassedXIndex}) {
   const [board, setBoard] = useState(Array(9).fill(null));
@@ -35,7 +36,7 @@ function TicTak({isX,passedXIndex,sendBoardSocket,setPassedXIndex}) {
   
   setXIsNext(!xIsNext); 
   }else{
-    alert("it's not your turn")
+    toast.info("It's not your turn")
   }
 }
 

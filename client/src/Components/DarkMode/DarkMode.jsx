@@ -205,6 +205,19 @@ export default function DarkMode() {
 }
 
 /* ─── Dark-mode hover overrides ─────────────────────────────── */
+.toast{
+  background:#1F2A3D !important;
+  color:#fff !important;
+  border-color:rgba(255,255,255,0.10) !important;
+  box-shadow:0 10px 30px rgba(0,0,0,0.45) !important;
+}
+.toast__close{
+  color:rgba(255,255,255,0.55) !important;
+}
+.toast__close:hover{
+  background:rgba(255,255,255,0.08) !important;
+  color:#fff !important;
+}
 .navgation,.headerContainer{
   background:#1F2A3D !important;
   border-bottom-color:rgba(255,255,255,0.08) !important;
