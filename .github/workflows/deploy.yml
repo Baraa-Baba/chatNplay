@@ -21,7 +21,7 @@ jobs:
           port: ${{ secrets.SSH_PORT || 22 }}
           script_stop: true
           script: |
-            set -e
+            set -euo pipefail
             cd /var/www/html/chatnplay
 
             mkdir -p .deploy
@@ -33,18 +33,44 @@ jobs:
             git fetch --all --prune
             git reset --hard origin/main
 
-            NEW_ROOT_LOCK=$(sha1sum package-lock.json | cut -d' ' -f1)
-            NEW_CLIENT_LOCK=$(sha1sum client/package-lock.json | cut -d' ' -f1)
-            NEW_CLIENT_SRC=$(find client/src client/public -type f \
+            # --- helpers ---
+            sha_or_empty() {
+              if [ -f "$1" ]; then
+                sha1sum "$1" | cut -d' ' -f1
+              else
+                echo ""
+              fi
+            }
+
+            sha_tree() {
+              # Usage: sha_tree <find args...>
+              # Returns empty string if no files match or paths missing.
+              find "$@" -print0 2>/dev/null \
+                | sort -z \
+                | xargs -0 -r sha1sum 2>/dev/null \
+                | sha1sum | cut -d' ' -f1
+            }
+
+            echo ">>> Computing hashes"
+            ls -la package-lock.json client/package-lock.json || true
+            ls -ld client/src client/public || true
+
+            NEW_ROOT_LOCK=$(sha_or_empty package-lock.json)
+            NEW_CLIENT_LOCK=$(sha_or_empty client/package-lock.json)
+            NEW_CLIENT_SRC=$(sha_tree client/src client/public -type f \
               \( -name '*.js' -o -name '*.jsx' -o -name '*.ts' -o -name '*.tsx' \
                  -o -name '*.css' -o -name '*.scss' -o -name '*.html' \
-                 -o -name '*.json' \) -print0 \
-              | sort -z | xargs -0 sha1sum | sha1sum | cut -d' ' -f1)
-            NEW_SERVER_SHA=$(find . -maxdepth 2 -type f \
+                 -o -name '*.json' \))
+            NEW_SERVER_SHA=$(sha_tree . -maxdepth 2 -type f \
               \( -name '*.js' -o -name '*.json' \) \
-              -not -path './client/*' -not -path './node_modules/*' \
-              -not -path './.deploy/*' -print0 \
-              | sort -z | xargs -0 sha1sum | sha1sum | cut -d' ' -f1)
+              -not -path './client/*' \
+              -not -path './node_modules/*' \
+              -not -path './.deploy/*')
+
+            echo "ROOT_LOCK:   $PREV_ROOT_LOCK -> $NEW_ROOT_LOCK"
+            echo "CLIENT_LOCK: $PREV_CLIENT_LOCK -> $NEW_CLIENT_LOCK"
+            echo "CLIENT_SRC:  $PREV_CLIENT_SRC -> $NEW_CLIENT_SRC"
+            echo "SERVER_SHA:  $PREV_SERVER_SHA -> $NEW_SERVER_SHA"
 
             # 1) Backend deps — only if root lockfile changed
             if [ "$NEW_ROOT_LOCK" != "$PREV_ROOT_LOCK" ] || [ ! -d node_modules ]; then
