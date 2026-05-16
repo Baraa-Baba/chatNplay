@@ -21,91 +21,22 @@ jobs:
           port: ${{ secrets.SSH_PORT || 22 }}
           script_stop: true
           script: |
-            set -euo pipefail
-            cd /var/www/html/chatnplay
+            set -e
 
-            mkdir -p .deploy
-            PREV_ROOT_LOCK=$(cat .deploy/root-lock.sha 2>/dev/null || echo "")
-            PREV_CLIENT_LOCK=$(cat .deploy/client-lock.sha 2>/dev/null || echo "")
-            PREV_CLIENT_SRC=$(cat .deploy/client-src.sha 2>/dev/null || echo "")
-            PREV_SERVER_SHA=$(cat .deploy/server.sha 2>/dev/null || echo "")
+            cd /var/www/html/chatnplay
 
             git fetch --all --prune
             git reset --hard origin/main
 
-            # --- helpers ---
-            sha_or_empty() {
-              if [ -f "$1" ]; then
-                sha1sum "$1" | cut -d' ' -f1
-              else
-                echo ""
-              fi
-            }
+            # backend deps (root app)
+            npm ci --omit=dev
 
-            sha_tree() {
-              # Usage: sha_tree <find args...>
-              # Returns empty string if no files match or paths missing.
-              find "$@" -print0 2>/dev/null \
-                | sort -z \
-                | xargs -0 -r sha1sum 2>/dev/null \
-                | sha1sum | cut -d' ' -f1
-            }
+            # frontend build
+            cd client
+            npm ci
+            NODE_OPTIONS=--openssl-legacy-provider npm run build
+            cd ..
 
-            echo ">>> Computing hashes"
-            ls -la package-lock.json client/package-lock.json || true
-            ls -ld client/src client/public || true
-
-            NEW_ROOT_LOCK=$(sha_or_empty package-lock.json)
-            NEW_CLIENT_LOCK=$(sha_or_empty client/package-lock.json)
-            NEW_CLIENT_SRC=$(sha_tree client/src client/public -type f \
-              \( -name '*.js' -o -name '*.jsx' -o -name '*.ts' -o -name '*.tsx' \
-                 -o -name '*.css' -o -name '*.scss' -o -name '*.html' \
-                 -o -name '*.json' \))
-            NEW_SERVER_SHA=$(sha_tree . -maxdepth 2 -type f \
-              \( -name '*.js' -o -name '*.json' \) \
-              -not -path './client/*' \
-              -not -path './node_modules/*' \
-              -not -path './.deploy/*')
-
-            echo "ROOT_LOCK:   $PREV_ROOT_LOCK -> $NEW_ROOT_LOCK"
-            echo "CLIENT_LOCK: $PREV_CLIENT_LOCK -> $NEW_CLIENT_LOCK"
-            echo "CLIENT_SRC:  $PREV_CLIENT_SRC -> $NEW_CLIENT_SRC"
-            echo "SERVER_SHA:  $PREV_SERVER_SHA -> $NEW_SERVER_SHA"
-
-            # 1) Backend deps — only if root lockfile changed
-            if [ "$NEW_ROOT_LOCK" != "$PREV_ROOT_LOCK" ] || [ ! -d node_modules ]; then
-              echo ">>> Installing backend deps"
-              npm ci --omit=dev --no-audit --no-fund --prefer-offline
-              echo "$NEW_ROOT_LOCK" > .deploy/root-lock.sha
-            else
-              echo ">>> Skipping backend install (lockfile unchanged)"
-            fi
-
-            # 2) Frontend — rebuild only if client deps OR client source changed
-            if [ "$NEW_CLIENT_LOCK" != "$PREV_CLIENT_LOCK" ] \
-               || [ "$NEW_CLIENT_SRC" != "$PREV_CLIENT_SRC" ] \
-               || [ ! -d client/build ]; then
-              echo ">>> Building frontend"
-              cd client
-              if [ "$NEW_CLIENT_LOCK" != "$PREV_CLIENT_LOCK" ] || [ ! -d node_modules ]; then
-                npm ci --no-audit --no-fund --prefer-offline
-                echo "$NEW_CLIENT_LOCK" > ../.deploy/client-lock.sha
-              fi
-              NODE_OPTIONS=--openssl-legacy-provider npm run build
-              echo "$NEW_CLIENT_SRC" > ../.deploy/client-src.sha
-              cd ..
-            else
-              echo ">>> Skipping frontend (no client changes)"
-            fi
-
-            # 3) Restart — only if backend code or deps changed
-            if [ "$NEW_SERVER_SHA" != "$PREV_SERVER_SHA" ] \
-               || [ "$NEW_ROOT_LOCK" != "$PREV_ROOT_LOCK" ]; then
-              echo ">>> Restarting service"
-              sudo systemctl restart chatnplay
-              sleep 1
-              sudo systemctl is-active chatnplay
-              echo "$NEW_SERVER_SHA" > .deploy/server.sha
-            else
-              echo ">>> Skipping restart (backend unchanged)"
-            fi
+            # restart service
+            sudo systemctl restart chatnplay
+            sudo systemctl is-active chatnplay
