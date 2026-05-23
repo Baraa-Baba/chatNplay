@@ -1375,7 +1375,7 @@ function App() {
             <>
               <div id='addFriendCont' >
                 <div className="reciveRequest" style={{ zIndex: 100000000, position: 'absolute' }} >
-                  <p>Want to be friends?</p>
+                  <p>Want to be friends? </p>
                   <div className='handleFriendsRequestButtonsCont'>
                     <button className='handleFriendsRequestButtons noButton' onClick={() => sendIsAceptedFriend(false)}>Decline</button>
                     <button className='handleFriendsRequestButtons' onClick={() => sendIsAceptedFriend(true)}>Accept</button>
