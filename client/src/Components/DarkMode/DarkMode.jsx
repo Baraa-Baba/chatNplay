@@ -13,6 +13,9 @@ export default function DarkMode() {
           font-weight: bold;
           color: #E4EDDC;
         }
+        .status-login{
+        color:#E4EDDC
+        }
         .chatInput{
           background:#0B1422 !important;
           color:#fff !important;
@@ -158,9 +161,6 @@ export default function DarkMode() {
             } 
             .enjoyInstant{
               color:#eeeeee;
-            }
-            .AgreeTextOnTerms{
-              color:#fff;
             }
             .logIn{
               color:#eee

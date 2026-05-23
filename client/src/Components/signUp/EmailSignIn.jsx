@@ -57,7 +57,7 @@ export default function EmailSignIn({isSignUp}) {
       <div> 
         <input placeholder="Enter your Email" className="signInput" type="email" value={email} onChange={(e)=>handleEmailChange(e)} /> 
         
-      <div>{status}</div> 
+      <div className="status-login">{status}</div> 
         <button className="signInbutton" onClick={(e)=>handleSignInWithEmailLink(e)}>
           {isSignUp? 'Sign up' : 'log in'}
           </button> 

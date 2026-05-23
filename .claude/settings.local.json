@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx react-scripts *)",
+      "Bash(NODE_OPTIONS=--openssl-legacy-provider npx react-scripts build)",
+      "Bash(npm uninstall *)",
+      "Bash(DISPLAY=:0 xdotool search --name \"ChatNPlay\" windowactivate)",
+      "Bash(DISPLAY=:0 xdotool search --name \"localhost:3000\" windowactivate)",
+      "Bash(DISPLAY=:0 gnome-screenshot -f /tmp/app_screenshot2.png)",
+      "Bash(DISPLAY=:0 gnome-screenshot -f /tmp/app_nofilter.png)"
+    ]
+  }
+}

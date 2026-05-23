@@ -4,6 +4,7 @@ import SignIn from "../signUp/signUp";
 import { useUserAuth } from "../../context/Auth";
 import { FaUser, FaUserCircle } from 'react-icons/fa';
 import Dashboard from "../Dashboard/Dashboard";
+import { all } from "axios";
 
 const Navigation = ({ setisDashboard, isDashboard, online,isStarted }) => {
   const { user } = useUserAuth();
@@ -13,7 +14,11 @@ const Navigation = ({ setisDashboard, isDashboard, online,isStarted }) => {
 
   return (
     <div className="navgation">
-      <div className="logoText">ChatNPlay</div>
+        <a href="/" style={{textDecoration: "none"}}>
+      <div className="logoText">
+            ChatNPlay
+        </div>
+        </a>
 
 
       {!user?.uid && (

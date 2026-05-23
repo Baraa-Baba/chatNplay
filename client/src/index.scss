@@ -554,8 +554,38 @@ button { font-family: inherit; }
   font-weight: 800 !important;
   letter-spacing: -0.025em !important;
   color: $text;
-  margin: 0.5rem 0 1rem 0;
+  margin: 0.25rem 0 0.5rem 0;
   line-height: 1.15;
+}
+
+.heroBlock {
+  max-width: 560px;
+}
+
+.heroEyebrow {
+  display: inline-block;
+  margin: 0 0 0.85rem 0;
+  padding: 4px 10px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: $primary;
+  background: $primary-soft;
+  border-radius: $r-pill;
+}
+
+.heroSubtitle {
+  margin: 0 0 1.25rem 0;
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: $text-muted;
+  letter-spacing: -0.005em;
+  line-height: 1.45;
+}
+
+.chatInputForm {
+  background: $surface;
 }
 
 /* ─── Add friend ──────────────────────────────────────────────── */
@@ -862,18 +892,6 @@ button { font-family: inherit; }
   border: 2px solid $surface;
 }
 
-/* ─── Terms / links ──────────────────────────────────────────── */
-.linksforterms { color: $text-faint !important; }
-
-.AgreeTextOnTerms {
-  font-family: inherit;
-  font-size: 0.95rem;
-  width: 400px;
-  display: inline-block;
-  color: $text-muted;
-  line-height: 1.5;
-}
-
 .checkBox {
   cursor: pointer;
   height: 1.4rem;
@@ -1167,6 +1185,9 @@ button { font-family: inherit; }
     font-size: 1.85rem !important;
     text-align: center;
   }
+
+  .heroBlock { text-align: center; }
+  .heroSubtitle { text-align: center; font-size: 0.95rem; }
 
   .openerForCont {
     position: absolute;

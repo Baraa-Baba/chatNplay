@@ -4,8 +4,7 @@ import {
   Routes,
   Route,
 } from "react-router-dom";
-import App from './App'; 
-import Terms from './Components/Policies/Terms'; 
+import App from './App';
 import Credits from './Components/credits/credits';
 import SignIn from './Components/signUp/signUp';
 import Dashboard from './Components/Dashboard/Dashboard';
@@ -17,8 +16,7 @@ function Main() {
     <ToastProvider>
       <Router>
         <Routes> 
-          <Route path="/" element={<App />} /> 
-          <Route path="/Terms" element={<Terms />} /> 
+          <Route path="/" element={<App />} />
           <Route path="/Credits" element={<Credits />} />
           <Route path="/signUp" element={<SignIn />} />
           <Route path="/dashboard" element={

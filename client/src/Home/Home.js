@@ -44,22 +44,16 @@ function Home() {
         <p>
           To help you stay safe, chats are anonymous unless you tell someone who
           you are (not recommended!), and you can pause the chat at any time.
-          For more information about the dos and don'ts of using Frndsmeet, see our
-          <Link to="/Terms">
-            Terms of Service
-          </Link>  and  <Link to="/Guidelines">
-            Community Guidelines
-          </Link>. Frndsmeet's video chat is
-          moderated but no moderation is perfect. Users are solely responsible
-          for their behavior when using Frndsmeet.
+          Frndsmeet's video chat is moderated but no moderation is perfect.
+          Users are solely responsible for their behavior when using Frndsmeet.
         </p>
 
         <h3>Age Criteria</h3>
         <p>
           You must be 18+ or 13+ with parental permission and supervision to use
-          Frndsmeet. See Frndsmeet's Terms of Service for more information. Parental
-          control protections that assist parents are commercially available and
-          you can find more information at <a href=" https://www.connectsafely.org/controls"> https://www.connectsafely.org/controls/</a>
+          Frndsmeet. Parental control protections that assist parents are
+          commercially available and you can find more information at
+          <a href=" https://www.connectsafely.org/controls"> https://www.connectsafely.org/controls/</a>
           as well as other sites.
         </p>
 

@@ -15,6 +15,7 @@ import DarkMode from "./Components/DarkMode/DarkMode";
 import ControlBar from "./Components/ControlBar/ControlBar";
 import FilterCarousel from "./Components/FilterCarousel/FilterCarousel";
 import { toast } from "./Components/Toast/Toast";
+import { preloadFilterAssets } from "./utils/preloadFilters";
 import LazyFilters2 from "./Components/LazyFilters/LazyFilters";
 import { useNavigate } from 'react-router-dom';
 import { setDoc, doc, getDoc } from "firebase/firestore";
@@ -120,9 +121,7 @@ function App() {
     console.log(PartnerData)
   }, [PartnerData])
   useEffect(() => {
-    if (user?.uid && user?.phoneNumber) {
-      setAuthType('phoneNumberLogin')
-    } else if (user?.uid) {
+    if (user?.uid) {
       setAuthType('anyLogin')
     } else {
       setAuthType('noLogin')
@@ -786,6 +785,9 @@ function App() {
     }
   }, [isMobile])
   useEffect(() => {
+    preloadFilterAssets();
+  }, []);
+  useEffect(() => {
     if (!isOnline) {
       setIsSwaped(false)
     }
@@ -1089,28 +1091,17 @@ function App() {
   }
   function checkIfAllowed(e) {
     e.preventDefault()
-    if (AuthType === 'phoneNumberLogin') {
+    if (AuthType === 'anyLogin') {
       setUserAuthPrefrence(e.target.value)
       adjustWidth()
       return
     }
-    if (AuthType === 'anyLogin' && e.target.value !== 'phoneNumberLogin') {
-      setUserAuthPrefrence(e.target.value)
-      adjustWidth()
+    if (e.target.value === 'loginUsers') {
+      toast.info('You have to be logged in to activate this feature')
       return
-    } else {
-      if (e.target.value == 'loginUsers') {
-        toast.info('You have to be logged in to activate this feature')
-        return
-      }
     }
-    if (AuthType === 'noLogin' && AuthType === 'allUsers') {
-      setUserAuthPrefrence(e.target.value)
-      adjustWidth()
-      return
-    } else {
-      toast.info('You have to be logged in using your phone number to activate this feature')
-    }
+    setUserAuthPrefrence(e.target.value)
+    adjustWidth()
   }
   function shareScreen() {
     if (!myPeer.current || !isOnline || !stream) return;
@@ -1325,9 +1316,7 @@ function App() {
   // Controls are now rendered via <ControlBar> component
   // Filter options are now rendered via <FilterCarousel> component
   function getWidthBasedOnAuth() {
-    if (userAuthPrefernce === 'phoneNumberLogin') {
-      return 26
-    } else if (userAuthPrefernce === 'loginUsers') {
+    if (userAuthPrefernce === 'loginUsers') {
       return userAuthPrefernce.length + 4
     } else {
       return userAuthPrefernce.length + 1
@@ -1378,7 +1367,7 @@ function App() {
           {isSendRequst && !isMobile ?
             <div id='addFriendCont'>
               <p className="friendStatusText alertText">
-                friends request has been sent ({friendRequestStatus})
+                Friend request sent · {friendRequestStatus}
               </p>
             </div> : null
           }
@@ -1386,10 +1375,10 @@ function App() {
             <>
               <div id='addFriendCont' >
                 <div className="reciveRequest" style={{ zIndex: 100000000, position: 'absolute' }} >
-                  <p>wanna be friends?</p>
+                  <p>Want to be friends?</p>
                   <div className='handleFriendsRequestButtonsCont'>
-                    <button className='handleFriendsRequestButtons noButton' onClick={() => sendIsAceptedFriend(false)}>no</button>
-                    <button className='handleFriendsRequestButtons' onClick={() => sendIsAceptedFriend(true)}>yes</button>
+                    <button className='handleFriendsRequestButtons noButton' onClick={() => sendIsAceptedFriend(false)}>Decline</button>
+                    <button className='handleFriendsRequestButtons' onClick={() => sendIsAceptedFriend(true)}>Accept</button>
                   </div>
                 </div>
               </div>
@@ -1397,19 +1386,20 @@ function App() {
           }
           {(
             <div>
-              {!isStarted && <div>
-                <p className='enjoyInstant'>Click Connect Chat Play </p>
+              {!isStarted && <div className="heroBlock"> 
+                <h1 className='enjoyInstant'>Meet strangers, instantly.</h1>
+                <p className='heroSubtitle'>Video chat, play games, make friends.</p>
                 <div className="flexCenterMobile">
                   <ChooseGame userGame={userGame} setUserGame={setUserGame} />
                 </div>
 
                 <div className="startAndSelectGenderCont">
 
-                  {!isMobile && <button onClick={() => nextUser()} className="StartButton">Start</button>}
+                  {!isMobile && <button onClick={() => nextUser()} className="StartButton">Start chatting</button>}
 
                   {isMobile && !isStarted1Mobile && <button onClick={() => {
                     setisStarted1Mobile(true)
-                  }} className="StartButton">Start</button>}
+                  }} className="StartButton">Start chatting</button>}
 
                 </div>
 
@@ -1446,7 +1436,7 @@ function App() {
                     ? <MyChessBoard isWhite={isWhite} passedMove={passedMove} sendMoveSocket={sendMoveSocket} /> : null}
                   {!isMobile && isShowDesktopChatBox ? <Chat isOnline={isOnline} messages={messages} /> : null}
                   <div className="inputContainer">
-                    <form style={{ background: 'white' }} onSubmit={(e) => sendMessage(e)}>
+                    <form className="chatInputForm" onSubmit={(e) => sendMessage(e)}>
                       <div className='whitebgInput'></div>
                       <input
                         className="chatInput"
@@ -1523,8 +1513,8 @@ function App() {
       {/* Online count is shown in Navigation */}
       {isStarted &&
         <div className="buttonsCont">
-          <button id='stopButton' onClick={(e) => stop(e)} className="button">stop</button>
-          <button onClick={() => nextUser()} className="button">next</button>
+          <button id='stopButton' onClick={(e) => stop(e)} className="button">Stop</button>
+          <button onClick={() => nextUser()} className="button">Next</button>
         </div>
       }
 
@@ -1622,7 +1612,7 @@ function App() {
         <button id='chooseFilter' style={{ display: 'none' }} aria-hidden="true" />
 
         <div className='startSearchingCont'>
-          {isMobile && <p className='startSearching' style={{ fontSize: '1.5rem' }} >start searching for a stranger </p>}
+          {isMobile && <p className='startSearching' style={{ fontSize: '1.5rem' }} >Ready to meet someone new?</p>}
           {isMobile && !isStarted && isStarted1Mobile && <button className='StartButton' onClick={() => nextUser()} style={{ display: 'block', padding: '1rem 2rem', fontSize: '1.5rem', width: '20rem', alignText: 'center' }} >Start searching</button>}
         </div>
 
@@ -1667,7 +1657,7 @@ function App() {
           {isSendRequst &&
             <div id=''>
               <p style={{ fontSize: '18px', top: '80px' }} className=" alertText">
-                friends request has been sent ({friendRequestStatus})
+                Friend request sent · {friendRequestStatus}
               </p>
             </div>
           }
@@ -1743,7 +1733,6 @@ function App() {
                   >
                     <option className='genderOptions' selected value='allUsers'>all users</option>
                     <option className='genderOptions' value='loginUsers'>logged in users</option>
-                    <option className='genderOptions' value='phoneNumberLogin'>phone number logged in users</option>
                   </select>
                 </div>
                 <input type="hidden" id='searchingPartner' />
@@ -1967,14 +1956,11 @@ top: 0;
       .EmojiPickerCont .epr-preview{
         display:none !important
       }
-@media screen and (max-width: 860px) { 
+@media screen and (max-width: 860px) {
   .goog-te-combo{
     font-size:1.5rem !important
   }
- .AgreeTextOnTerms{
-  font-size:14px
- }
-.openerForCont{ 
+.openerForCont{
   display:block
 } 
   .quickSettingsOverlay{
@@ -2162,9 +2148,6 @@ top: 0;
   }
   
 @media screen and (max-height: 500px) {
-.AgreeTextOnTerms{
-  font-size:14px
-}
 .checkBox{
 width:1.5rem;
 }
